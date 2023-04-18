@@ -14,6 +14,8 @@ object MainForm: TMainForm
   Font.Style = []
   Menu = MenuBar
   OldCreateOrder = False
+  Position = poScreenCenter
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object pnLists: TPanel
@@ -26,8 +28,6 @@ object MainForm: TMainForm
     Color = clWhite
     ParentBackground = False
     TabOrder = 0
-    ExplicitLeft = 216
-    ExplicitWidth = 766
     object pnListItemButtons: TPanel
       Left = 946
       Top = 21
@@ -37,8 +37,6 @@ object MainForm: TMainForm
       Color = clWhite
       ParentBackground = False
       TabOrder = 0
-      ExplicitLeft = 0
-      ExplicitHeight = 1246
       object btnEditItem: TButton
         Left = 50
         Top = 90
@@ -102,9 +100,20 @@ object MainForm: TMainForm
       Width = 946
       Height = 754
       Align = alClient
+      ColCount = 1
+      DefaultColWidth = 100
+      DefaultRowHeight = 30
+      FixedCols = 0
+      RowCount = 1
+      FixedRows = 0
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
+      ParentFont = False
       TabOrder = 1
-      ExplicitTop = 16
-      ExplicitHeight = 775
     end
     object cbLists: TComboBox
       Left = 0
@@ -114,7 +123,10 @@ object MainForm: TMainForm
       Align = alTop
       Style = csDropDownList
       TabOrder = 2
-      ExplicitWidth = 21
+      OnChange = cbListsChange
+      Items.Strings = (
+        'Components'#39' types'
+        'All components')
     end
   end
   object pnBuildPC: TPanel
@@ -127,21 +139,18 @@ object MainForm: TMainForm
     Color = clWhite
     ParentBackground = False
     TabOrder = 1
-    ExplicitLeft = 632
-    ExplicitTop = 367
-    ExplicitWidth = 185
-    ExplicitHeight = 41
-    object StringGrid1: TStringGrid
+    object sgComputersInfo: TStringGrid
       Left = 0
       Top = 0
       Width = 946
       Height = 775
       Align = alClient
+      ColCount = 1
+      FixedCols = 0
+      RowCount = 1
+      FixedRows = 0
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
       TabOrder = 0
-      ExplicitLeft = 176
-      ExplicitTop = 231
-      ExplicitWidth = 624
-      ExplicitHeight = 192
     end
     object pnBuildPCButtons: TPanel
       Left = 946
@@ -153,11 +162,10 @@ object MainForm: TMainForm
       Color = clWhite
       ParentBackground = False
       TabOrder = 1
-      ExplicitLeft = 952
       object lbTextPrice: TLabel
         Left = 50
         Top = 30
-        Width = 187
+        Width = 199
         Height = 19
         Caption = 'Please, enter a price range'
         Font.Charset = DEFAULT_CHARSET
