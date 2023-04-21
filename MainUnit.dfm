@@ -2,8 +2,8 @@ object MainForm: TMainForm
   Left = 0
   Top = 0
   Caption = 'MainForm'
-  ClientHeight = 775
-  ClientWidth = 1246
+  ClientHeight = 754
+  ClientWidth = 1219
   Color = clBtnFace
   Constraints.MinHeight = 330
   Constraints.MinWidth = 600
@@ -21,18 +21,18 @@ object MainForm: TMainForm
   object pnLists: TPanel
     Left = 0
     Top = 0
-    Width = 1246
-    Height = 775
+    Width = 1219
+    Height = 754
     Align = alClient
     BevelOuter = bvNone
     Color = clWhite
     ParentBackground = False
     TabOrder = 0
     object pnListItemButtons: TPanel
-      Left = 946
+      Left = 919
       Top = 21
       Width = 300
-      Height = 754
+      Height = 733
       Align = alRight
       Color = clWhite
       ParentBackground = False
@@ -51,7 +51,7 @@ object MainForm: TMainForm
         ParentFont = False
         TabOrder = 0
       end
-      object btnAddItem: TButton
+      object btnAddComponent: TButton
         Left = 50
         Top = 30
         Width = 200
@@ -64,6 +64,7 @@ object MainForm: TMainForm
         Font.Style = []
         ParentFont = False
         TabOrder = 1
+        OnClick = btnAddComponentClick
       end
       object btnDeleteItem: TButton
         Left = 50
@@ -93,15 +94,29 @@ object MainForm: TMainForm
         ParentFont = False
         TabOrder = 3
       end
+      object btnAddType: TButton
+        Left = 50
+        Top = 30
+        Width = 200
+        Height = 30
+        Caption = 'Add'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 4
+      end
     end
     object sgListInfo: TStringGrid
       Left = 0
       Top = 21
-      Width = 946
-      Height = 754
+      Width = 919
+      Height = 733
       Align = alClient
       ColCount = 1
-      DefaultColWidth = 100
+      DefaultColWidth = 30
       DefaultRowHeight = 30
       FixedCols = 0
       RowCount = 1
@@ -118,7 +133,7 @@ object MainForm: TMainForm
     object cbLists: TComboBox
       Left = 0
       Top = 0
-      Width = 1246
+      Width = 1219
       Height = 21
       Align = alTop
       Style = csDropDownList
@@ -132,8 +147,8 @@ object MainForm: TMainForm
   object pnBuildPC: TPanel
     Left = 0
     Top = 0
-    Width = 1246
-    Height = 775
+    Width = 1219
+    Height = 754
     Align = alClient
     BevelOuter = bvNone
     Color = clWhite
@@ -142,8 +157,8 @@ object MainForm: TMainForm
     object sgComputersInfo: TStringGrid
       Left = 0
       Top = 0
-      Width = 946
-      Height = 775
+      Width = 919
+      Height = 754
       Align = alClient
       ColCount = 1
       FixedCols = 0
@@ -153,10 +168,10 @@ object MainForm: TMainForm
       TabOrder = 0
     end
     object pnBuildPCButtons: TPanel
-      Left = 946
+      Left = 919
       Top = 0
       Width = 300
-      Height = 775
+      Height = 754
       Align = alRight
       BevelOuter = bvNone
       Color = clWhite
@@ -165,7 +180,7 @@ object MainForm: TMainForm
       object lbTextPrice: TLabel
         Left = 50
         Top = 30
-        Width = 199
+        Width = 187
         Height = 19
         Caption = 'Please, enter a price range'
         Font.Charset = DEFAULT_CHARSET
@@ -229,7 +244,7 @@ object MainForm: TMainForm
         ParentFont = False
         TabOrder = 1
       end
-      object Button1: TButton
+      object btnBuildPC: TButton
         Left = 50
         Top = 210
         Width = 200
@@ -246,18 +261,20 @@ object MainForm: TMainForm
     end
   end
   object MenuBar: TMainMenu
-    Left = 592
-    Top = 528
+    Left = 1104
+    Top = 624
     object menuFile: TMenuItem
       AutoHotkeys = maAutomatic
       Caption = 'File'
       object menuExitSave: TMenuItem
         Caption = 'Exit and save'
         Hint = 'Closes the program saving all changes made'
+        OnClick = menuExitSaveClick
       end
       object menuExit: TMenuItem
         Caption = 'Exit'
         Hint = 'Closes the program without saving the changes made'
+        OnClick = menuExitClick
       end
     end
     object menuBuildPC: TMenuItem
