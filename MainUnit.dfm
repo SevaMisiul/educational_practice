@@ -1,7 +1,7 @@
 object MainForm: TMainForm
   Left = 0
   Top = 0
-  Caption = 'MainForm'
+  Caption = 'Computer builder'
   ClientHeight = 754
   ClientWidth = 1219
   Color = clBtnFace
@@ -15,6 +15,7 @@ object MainForm: TMainForm
   Menu = MenuBar
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -37,7 +38,7 @@ object MainForm: TMainForm
       Color = clWhite
       ParentBackground = False
       TabOrder = 0
-      object btnEditItem: TButton
+      object btnEditType: TButton
         Left = 50
         Top = 90
         Width = 200
@@ -50,6 +51,7 @@ object MainForm: TMainForm
         Font.Style = []
         ParentFont = False
         TabOrder = 0
+        OnClick = btnEditTypeClick
       end
       object btnAddComponent: TButton
         Left = 50
@@ -107,6 +109,22 @@ object MainForm: TMainForm
         Font.Style = []
         ParentFont = False
         TabOrder = 4
+        OnClick = btnAddTypeClick
+      end
+      object btnEditComponent: TButton
+        Left = 50
+        Top = 90
+        Width = 200
+        Height = 30
+        Caption = 'Edit'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 5
+        OnClick = btnEditComponentClick
       end
     end
     object sgListInfo: TStringGrid
@@ -268,12 +286,10 @@ object MainForm: TMainForm
       Caption = 'File'
       object menuExitSave: TMenuItem
         Caption = 'Exit and save'
-        Hint = 'Closes the program saving all changes made'
         OnClick = menuExitSaveClick
       end
       object menuExit: TMenuItem
         Caption = 'Exit'
-        Hint = 'Closes the program without saving the changes made'
         OnClick = menuExitClick
       end
     end

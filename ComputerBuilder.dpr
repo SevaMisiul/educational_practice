@@ -1,9 +1,10 @@
-program ComputerBuilder;
+﻿program ComputerBuilder;
 
 uses
   Vcl.Forms,
   MainUnit in 'MainUnit.pas' {MainForm},
-  AddComponentUnit in 'AddComponentUnit.pas' {AddComponentForm};
+  ComponentUnit in 'ComponentUnit.pas' {ComponentForm},
+  TypeUnit in 'TypeUnit.pas' {AddTypeForm};
 
 {$R *.res}
 
@@ -11,6 +12,7 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TMainForm, MainForm);
-  Application.CreateForm(TAddComponentForm, AddComponentForm);
+  Application.CreateForm(TComponentForm, ComponentForm);
+  Application.CreateForm(TAddTypeForm, AddTypeForm);
   Application.Run;
 end.

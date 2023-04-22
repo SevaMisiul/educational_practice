@@ -1,8 +1,8 @@
-object AddComponentForm: TAddComponentForm
+object ComponentForm: TComponentForm
   Left = 0
   Top = 0
   BorderStyle = bsDialog
-  Caption = 'AddComponentForm'
+  Caption = 'Component'
   ClientHeight = 487
   ClientWidth = 539
   Color = clBtnFace
@@ -99,7 +99,7 @@ object AddComponentForm: TAddComponentForm
     Left = 30
     Top = 110
     Width = 201
-    Height = 30
+    Height = 27
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -141,7 +141,7 @@ object AddComponentForm: TAddComponentForm
     Left = 310
     Top = 50
     Width = 201
-    Height = 30
+    Height = 27
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
