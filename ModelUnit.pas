@@ -2,6 +2,8 @@ unit ModelUnit;
 
 interface
 
+uses math;
+
 type
   TTypeInfo = record
     TypeCode: Integer;
@@ -44,7 +46,7 @@ type
   TCompatibleList = record
     ComponentCode: Integer;
     LastItem: PCompatibleLI;
-    List: PCompatibleLI;
+    Header: PCompatibleLI;
     Next: PCompatibleList;
   end;
 
@@ -58,7 +60,7 @@ type
     FTypeList: PTypeLI;
     FComponentHeader: PComponentLI;
     FCompatibleList: PCompatibleList;
-    FComponentsCount, FTypesCount: Integer;
+    FComponentID, FTypeID: Integer;
   public
     constructor Create;
     procedure AddCompatible(const ComponentCode1, ComponentCode2: Integer);
@@ -70,12 +72,16 @@ type
     function GetCompatibleList(ComponentCode: Integer): PCompatibleList;
     function GetType(TypeCode: Integer): PTypeLI;
     function GetTypeCode(TypeName: string): Integer;
-    function IsCompatible(Code1, Code2: Integer): Boolean;
+    function IsCompatible(CompatibleL: PCompatibleList; Code2: Integer): Boolean;
     procedure SaveLists(TypeLPath, ComponentLPath, CompatibleLPath: string);
     procedure ReadLists(TypeLPath, ComponentLPath, CompatibleLPath: string);
+    procedure DeleteCompatibleList(CompatibleL: PCompatibleList);
+    procedure DeleteCompatibleItem(Code1, Code2: Integer);
+    procedure DeleteComponent(ComponentCode, TypeCode: Integer);
+    procedure DeleteType(TypeCode: Integer);
 
-    property ComponentsCount: Integer read FComponentsCount;
-    property TypesCount: Integer read FTypesCount;
+    property ComponentID: Integer read FComponentID;
+    property TypeID: Integer read FTypeID;
     property TypeList: PTypeLI read FTypeList;
     property ComponentHeader: PComponentLI read FComponentHeader;
     property CompatibleList: PCompatibleList read FCompatibleList;
@@ -89,20 +95,24 @@ implementation
 procedure TModel.AddCompatible(const ComponentCode1, ComponentCode2: Integer);
 var
   TmpList: PCompatibleList;
-  TmpItem: PCompatibleLI;
+  TmpItem, Header: PCompatibleLI;
 begin
   TmpList := GetCompatibleList(ComponentCode1);
   new(TmpItem);
-  if TmpList <> nil then
+  if (TmpList <> nil) and (TmpList^.Header <> nil) then
     TmpList^.LastItem^.Next := TmpItem
-  else
+  else if TmpList = nil then
   begin
     new(TmpList);
     TmpList^.Next := FCompatibleList;
     FCompatibleList := TmpList;
     TmpList^.ComponentCode := ComponentCode1;
-    TmpList^.List := TmpItem;
-  end;
+    new(Header);
+    TmpList^.Header := Header;
+    TmpList^.Header^.Next := TmpItem;
+  end
+  else
+    TmpList^.Header := TmpItem;
   TmpList^.LastItem := TmpItem;
   TmpItem^.Next := nil;
   TmpItem^.ComponentCode := ComponentCode2;
@@ -129,7 +139,7 @@ begin
   Tmp^.Info := Info;
   Tmp^.Next := LastComponent^.Next;
   LastComponent^.Next := Tmp;
-  Inc(FComponentsCount);
+  FComponentID := Max(FComponentID, Info.ComponentCode);
 end;
 
 procedure TModel.AddType(const Info: TTypeInfo);
@@ -141,7 +151,7 @@ begin
   Tmp^.Next := FTypeList;
   Tmp^.Last := nil;
   FTypeList := Tmp;
-  Inc(FTypesCount);
+  FTypeID := Max(Info.TypeCode, FTypeID);
 end;
 
 constructor TModel.Create;
@@ -151,16 +161,121 @@ begin
   FComponentHeader^.Next := nil;
   FCompatibleList := nil;
 
-  FComponentsCount := 0;
-  FTypesCount := 0;
+  FComponentID := 0;
+  FTypeID := 0;
+end;
+
+procedure TModel.DeleteCompatibleItem(Code1, Code2: Integer);
+var
+  TmpCompatibleL: PCompatibleList;
+  TmpCompatibleI, Tmp: PCompatibleLI;
+begin
+  TmpCompatibleL := GetCompatibleList(Code1);
+  if TmpCompatibleL <> nil then
+  begin
+    TmpCompatibleI := TmpCompatibleL^.Header;
+    while TmpCompatibleI^.Next^.ComponentCode <> Code2 do
+      TmpCompatibleI := TmpCompatibleI^.Next;
+    if TmpCompatibleI^.Next = TmpCompatibleL^.LastItem then
+      TmpCompatibleL^.LastItem := TmpCompatibleI;
+    Tmp := TmpCompatibleI^.Next;
+    TmpCompatibleI^.Next := Tmp^.Next;
+    Dispose(Tmp);
+  end;
+end;
+
+procedure TModel.DeleteCompatibleList(CompatibleL: PCompatibleList);
+var
+  TmpCompatibleI: PCompatibleLI;
+  TmpList, Tmp: PCompatibleList;
+begin
+  if CompatibleL <> nil then
+  begin
+    TmpCompatibleI := CompatibleL^.Header;
+    CompatibleL^.Header := CompatibleL^.Header^.Next;
+    Dispose(TmpCompatibleI);
+    while CompatibleL^.Header <> nil do
+    begin
+      TmpCompatibleI := CompatibleL^.Header;
+      DeleteCompatibleItem(TmpCompatibleI^.ComponentCode, CompatibleL^.ComponentCode);
+      CompatibleL^.Header := CompatibleL^.Header^.Next;
+      Dispose(TmpCompatibleI);
+    end;
+    TmpList := CompatibleList;
+    if CompatibleL = CompatibleList then
+    begin
+      FCompatibleList := CompatibleL^.Next;
+      Dispose(CompatibleL);
+    end
+    else
+    begin
+      while TmpList^.Next <> CompatibleL do
+        TmpList := TmpList^.Next;
+      Tmp := TmpList^.Next;
+      TmpList^.Next := TmpList^.Next^.Next;
+      Dispose(Tmp);
+    end;
+  end;
+end;
+
+procedure TModel.DeleteComponent(ComponentCode, TypeCode: Integer);
+var
+  TmpComponent, Tmp: PComponentLI;
+  TmpType: PTypeLI;
+begin
+  TmpComponent := ListsModel.ComponentHeader;
+  while TmpComponent^.Next^.Info.ComponentCode <> ComponentCode do
+    TmpComponent := TmpComponent^.Next;
+  TmpType := ListsModel.GetType(TypeCode);
+  if TmpComponent^.Next = TmpType^.Last then
+    if TmpComponent^.Info.TypeCode = TmpType^.Info.TypeCode then
+      TmpType^.Last := TmpComponent
+    else
+      TmpType^.Last := nil;
+  Tmp := TmpComponent^.Next;
+  TmpComponent^.Next := Tmp^.Next;
+  Dispose(Tmp);
+  DeleteCompatibleList(GetCompatibleList(ComponentCode));
+end;
+
+procedure TModel.DeleteType(TypeCode: Integer);
+var
+  ComponentBorders: TListBorders;
+  Tmp: PComponentLI;
+  TmpType, P: PTypeLI;
+begin
+  ComponentBorders := GetComponentListBorders(TypeCode);
+  if ComponentBorders.Last <> nil then
+  begin
+    ComponentBorders.Last := ComponentBorders.Last^.Next;
+    Tmp := ComponentBorders.First;
+    while ComponentBorders.First <> ComponentBorders.Last do
+    begin
+      ComponentBorders.First := ComponentBorders.First^.Next;
+      DeleteComponent(Tmp^.Info.ComponentCode, Tmp^.Info.TypeCode);
+      Tmp := ComponentBorders.First;
+    end;
+  end;
+  TmpType := TypeList;
+  if TmpType^.Info.TypeCode = TypeCode then
+  begin
+    FTypeList := TmpType^.Next;
+    Dispose(TmpType);
+  end
+  else
+  begin
+    while TmpType^.Next^.Info.TypeCode <> TypeCode do
+      TmpType := TmpType^.Next;
+    P := TmpType^.Next;
+    TmpType^.Next := P^.Next;
+    Dispose(P);
+  end;
 end;
 
 procedure TModel.FreeMemory;
 var
   TmpType: PTypeLI;
   TmpComponent: PComponentLI;
-  TmpCompatibleL: PCompatibleList;
-  TmpCompatibleI: PCompatibleLI;
 begin
   while FTypeList <> nil do
   begin
@@ -177,17 +292,7 @@ begin
   end;
 
   while FCompatibleList <> nil do
-  begin
-    TmpCompatibleL := FCompatibleList;
-    while TmpCompatibleL^.List <> nil do
-    begin
-      TmpCompatibleI := TmpCompatibleL^.List;
-      TmpCompatibleL^.List := TmpCompatibleL^.List^.Next;
-      Dispose(TmpCompatibleI);
-    end;
-    FCompatibleList := FCompatibleList^.Next;
-    Dispose(TmpCompatibleL);
-  end;
+    DeleteCompatibleList(FCompatibleList);
 end;
 
 function TModel.GetCompatibleList(ComponentCode: Integer): PCompatibleList;
@@ -246,7 +351,7 @@ function TModel.GetTypeCode(TypeName: string): Integer;
 var
   TmpType: PTypeLI;
 begin
-  if TypeName = 'All components' then
+  if (TypeName = 'All components') or (TypeName = '') then
     result := -1
   else
   begin
@@ -257,16 +362,14 @@ begin
   end;
 end;
 
-function TModel.IsCompatible(Code1, Code2: Integer): Boolean;
+function TModel.IsCompatible(CompatibleL: PCompatibleList; Code2: Integer): Boolean;
 var
-  TmpCompatibleL: PCompatibleList;
   TmpCompatibleItem: PCompatibleLI;
 begin
-  TmpCompatibleL := GetCompatibleList(Code1);
   TmpCompatibleItem := nil;
-  if TmpCompatibleL <> nil then
+  if CompatibleL <> nil then
   begin
-    TmpCompatibleItem := TmpCompatibleL^.List;
+    TmpCompatibleItem := CompatibleL^.Header^.Next;
     while (TmpCompatibleItem <> nil) and (TmpCompatibleItem^.ComponentCode <> Code2) do
       TmpCompatibleItem := TmpCompatibleItem^.Next;
   end;
@@ -315,9 +418,9 @@ begin
       if Code2 <> -1 then
       begin
         AddCompatible(Code1, Code2);
-        AddCompatible(Code2, Code1);
       end;
     end;
+    Code2 := 0;
   end;
   CloseFile(CompatibleF);
 end;
@@ -360,13 +463,17 @@ begin
   Rewrite(CompatibleF);
   while TmpCompatibleList <> nil do
   begin
-    TmpCompatibleItem := TmpCompatibleList^.List;
-    while TmpCompatibleItem <> nil do
+    if TmpCompatibleList^.Header <> nil then
     begin
-      write(CompatibleF, TmpCompatibleItem^.ComponentCode);
-      TmpCompatibleItem := TmpCompatibleItem^.Next;
+      write(CompatibleF, TmpCompatibleList^.ComponentCode);
+      TmpCompatibleItem := TmpCompatibleList^.Header^.Next;
+      while TmpCompatibleItem <> nil do
+      begin
+        write(CompatibleF, TmpCompatibleItem^.ComponentCode);
+        TmpCompatibleItem := TmpCompatibleItem^.Next;
+      end;
+      write(CompatibleF, I);
     end;
-    write(CompatibleF, I);
     TmpCompatibleList := TmpCompatibleList^.Next;
   end;
   CloseFile(CompatibleF);

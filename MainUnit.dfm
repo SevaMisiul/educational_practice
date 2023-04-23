@@ -3,7 +3,7 @@ object MainForm: TMainForm
   Top = 0
   Caption = 'Computer builder'
   ClientHeight = 754
-  ClientWidth = 1219
+  ClientWidth = 1293
   Color = clBtnFace
   Constraints.MinHeight = 330
   Constraints.MinWidth = 600
@@ -22,15 +22,16 @@ object MainForm: TMainForm
   object pnLists: TPanel
     Left = 0
     Top = 0
-    Width = 1219
+    Width = 1293
     Height = 754
     Align = alClient
     BevelOuter = bvNone
     Color = clWhite
     ParentBackground = False
     TabOrder = 0
-    object pnListItemButtons: TPanel
-      Left = 919
+    ExplicitWidth = 1219
+    object pnTypeListButtons: TPanel
+      Left = 993
       Top = 21
       Width = 300
       Height = 733
@@ -38,6 +39,7 @@ object MainForm: TMainForm
       Color = clWhite
       ParentBackground = False
       TabOrder = 0
+      ExplicitLeft = 919
       object btnEditType: TButton
         Left = 50
         Top = 90
@@ -53,22 +55,7 @@ object MainForm: TMainForm
         TabOrder = 0
         OnClick = btnEditTypeClick
       end
-      object btnAddComponent: TButton
-        Left = 50
-        Top = 30
-        Width = 200
-        Height = 30
-        Caption = 'Add'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 1
-        OnClick = btnAddComponentClick
-      end
-      object btnDeleteItem: TButton
+      object btnDeleteType: TButton
         Left = 50
         Top = 150
         Width = 200
@@ -80,21 +67,8 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 2
-      end
-      object btnShowCompatible: TButton
-        Left = 50
-        Top = 210
-        Width = 200
-        Height = 30
-        Caption = 'Show compatible'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 3
+        TabOrder = 1
+        OnClick = btnDeleteTypeClick
       end
       object btnAddType: TButton
         Left = 50
@@ -108,29 +82,14 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 4
+        TabOrder = 2
         OnClick = btnAddTypeClick
-      end
-      object btnEditComponent: TButton
-        Left = 50
-        Top = 90
-        Width = 200
-        Height = 30
-        Caption = 'Edit'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 5
-        OnClick = btnEditComponentClick
       end
     end
     object sgListInfo: TStringGrid
       Left = 0
       Top = 21
-      Width = 919
+      Width = 693
       Height = 733
       Align = alClient
       ColCount = 1
@@ -147,11 +106,12 @@ object MainForm: TMainForm
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
       ParentFont = False
       TabOrder = 1
+      ExplicitWidth = 619
     end
     object cbLists: TComboBox
       Left = 0
       Top = 0
-      Width = 1219
+      Width = 1293
       Height = 21
       Align = alTop
       Style = csDropDownList
@@ -160,22 +120,95 @@ object MainForm: TMainForm
       Items.Strings = (
         'Components'#39' types'
         'All components')
+      ExplicitWidth = 1219
+    end
+    object pnComponentListButtons: TPanel
+      Left = 693
+      Top = 21
+      Width = 300
+      Height = 733
+      Align = alRight
+      Color = clWhite
+      ParentBackground = False
+      TabOrder = 3
+      ExplicitLeft = 619
+      object btnAddComponent: TButton
+        Left = 50
+        Top = 30
+        Width = 200
+        Height = 30
+        Caption = 'Add'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        OnClick = btnAddComponentClick
+      end
+      object btnDeleteComponent: TButton
+        Left = 50
+        Top = 150
+        Width = 200
+        Height = 30
+        Caption = 'Delete'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 1
+        OnClick = btnDeleteComponentClick
+      end
+      object btnEditComponent: TButton
+        Left = 50
+        Top = 90
+        Width = 200
+        Height = 30
+        Caption = 'Edit'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 2
+        OnClick = btnEditComponentClick
+      end
+      object btnShowCompatible: TButton
+        Left = 50
+        Top = 210
+        Width = 200
+        Height = 30
+        Caption = 'Show compatible'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 3
+        OnClick = btnShowCompatibleClick
+      end
     end
   end
   object pnBuildPC: TPanel
     Left = 0
     Top = 0
-    Width = 1219
+    Width = 1293
     Height = 754
     Align = alClient
     BevelOuter = bvNone
     Color = clWhite
     ParentBackground = False
     TabOrder = 1
+    ExplicitWidth = 1219
     object sgComputersInfo: TStringGrid
       Left = 0
       Top = 0
-      Width = 919
+      Width = 993
       Height = 754
       Align = alClient
       ColCount = 1
@@ -184,9 +217,10 @@ object MainForm: TMainForm
       FixedRows = 0
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
       TabOrder = 0
+      ExplicitWidth = 919
     end
     object pnBuildPCButtons: TPanel
-      Left = 919
+      Left = 993
       Top = 0
       Width = 300
       Height = 754
@@ -195,6 +229,7 @@ object MainForm: TMainForm
       Color = clWhite
       ParentBackground = False
       TabOrder = 1
+      ExplicitLeft = 919
       object lbTextPrice: TLabel
         Left = 50
         Top = 30
@@ -295,9 +330,11 @@ object MainForm: TMainForm
     end
     object menuBuildPC: TMenuItem
       Caption = 'Build PC'
+      OnClick = menuBuildPCClick
     end
     object menuWatchLists: TMenuItem
       Caption = 'Watch Lists'
+      OnClick = menuWatchListsClick
     end
   end
 end
