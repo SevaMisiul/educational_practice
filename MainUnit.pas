@@ -121,7 +121,20 @@ begin
       Code1 := ComponentInfo.ComponentCode;
       FillCompatibleList(Code1);
       ListsModel.AddComponent(ComponentInfo);
-      ViewComponentList(ListsModel.GetComponentListBorders(ListsModel.GetTypeCode(cbLists.Text)));
+
+      with sgListInfo, ComponentInfo do
+      begin
+        RowCount := RowCount + 1;
+        Cells[0, RowCount - 1] := IntToStr(ComponentCode);
+        Cells[1, RowCount - 1] := IntToStr(TypeCode);;
+        Cells[2, RowCount - 1] := Model;
+        Cells[3, RowCount - 1] := Description;
+        Cells[4, RowCount - 1] := IntToStr(Price);
+        if IsInStock then
+          Cells[5, RowCount - 1] := 'Yes'
+        else
+          Cells[5, RowCount - 1] := 'No';
+      end;
     end;
   end;
 end;
@@ -139,7 +152,13 @@ begin
       TypeInfo.TypeCode := ListsModel.TypeID + 1;
       TypeInfo.TypeName := edtType.Text;
       ListsModel.AddType(TypeInfo);
-      ViewTypeList();
+      with sgListInfo, TypeInfo do
+      begin
+        RowCount := RowCount + 1;
+        Cells[0, RowCount - 1] := IntToStr(TypeCode);
+        Cells[1, RowCount - 1] := TypeName;
+      end;
+      cbLists.Items.Add(TypeInfo.TypeName);
     end;
   end;
 end;
