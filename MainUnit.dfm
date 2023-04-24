@@ -29,7 +29,6 @@ object MainForm: TMainForm
     Color = clWhite
     ParentBackground = False
     TabOrder = 0
-    ExplicitWidth = 1219
     object pnTypeListButtons: TPanel
       Left = 993
       Top = 21
@@ -39,7 +38,6 @@ object MainForm: TMainForm
       Color = clWhite
       ParentBackground = False
       TabOrder = 0
-      ExplicitLeft = 919
       object btnEditType: TButton
         Left = 50
         Top = 90
@@ -106,7 +104,6 @@ object MainForm: TMainForm
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
       ParentFont = False
       TabOrder = 1
-      ExplicitWidth = 619
     end
     object cbLists: TComboBox
       Left = 0
@@ -120,7 +117,6 @@ object MainForm: TMainForm
       Items.Strings = (
         'Components'#39' types'
         'All components')
-      ExplicitWidth = 1219
     end
     object pnComponentListButtons: TPanel
       Left = 693
@@ -131,7 +127,6 @@ object MainForm: TMainForm
       Color = clWhite
       ParentBackground = False
       TabOrder = 3
-      ExplicitLeft = 619
       object btnAddComponent: TButton
         Left = 50
         Top = 30
@@ -204,7 +199,6 @@ object MainForm: TMainForm
     Color = clWhite
     ParentBackground = False
     TabOrder = 1
-    ExplicitWidth = 1219
     object sgComputersInfo: TStringGrid
       Left = 0
       Top = 0
@@ -217,7 +211,6 @@ object MainForm: TMainForm
       FixedRows = 0
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
       TabOrder = 0
-      ExplicitWidth = 919
     end
     object pnBuildPCButtons: TPanel
       Left = 993
@@ -229,7 +222,6 @@ object MainForm: TMainForm
       Color = clWhite
       ParentBackground = False
       TabOrder = 1
-      ExplicitLeft = 919
       object lbTextPrice: TLabel
         Left = 50
         Top = 30

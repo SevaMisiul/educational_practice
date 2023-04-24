@@ -393,21 +393,21 @@ begin
   begin
     AssignFile(F, 'lists\types.info');
     Rewrite(F);
-    CloseFile(F);       
+    CloseFile(F);
   end;
   if not FileExists('lists\components.info') then
   begin
     AssignFile(F, 'lists\components.info');
     Rewrite(F);
-    CloseFile(F);       
+    CloseFile(F);
   end;
   if not FileExists('lists\compatible.info') then
   begin
     AssignFile(F, 'lists\compatible.info');
     Rewrite(F);
-    CloseFile(F);       
+    CloseFile(F);
   end;
-  
+
   ExitMode := 2;
   sgListInfo.RowHeights[0] := -1;
   sgComputersInfo.RowHeights[0] := -1;
