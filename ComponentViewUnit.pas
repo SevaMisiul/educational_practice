@@ -25,7 +25,7 @@ type
     procedure btnOkClick(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure FillListBox;
+    procedure FillListBox(Code: Integer = -1);
   private
     FIsSave: Boolean;
   public
@@ -55,21 +55,22 @@ begin
   end;
 end;
 
-procedure TComponentForm.FillListBox;
+procedure TComponentForm.FillListBox(Code: Integer);
 var
   Res: TListBorders;
 begin
   chlbCompatibleComponents.Items.Clear;
 
   Res := ListsModel.GetComponentListBorders;
-    if Res.Last <> nil then
-      Res.Last := Res.Last^.Next;
+  if Res.Last <> nil then
+    Res.Last := Res.Last^.Next;
 
-    while Res.First <> Res.Last do
-    begin
+  while Res.First <> Res.Last do
+  begin
+    if Code <> Res.First^.Info.TypeCode then
       chlbCompatibleComponents.Items.Add(IntToStr(Res.First^.Info.ComponentCode) + ' ' + Res.First^.Info.Model);
-      Res.First := Res.First^.Next;
-    end;
+    Res.First := Res.First^.Next;
+  end;
 end;
 
 procedure TComponentForm.FormShow(Sender: TObject);

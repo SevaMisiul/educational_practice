@@ -209,7 +209,13 @@ object MainForm: TMainForm
       FixedCols = 0
       RowCount = 1
       FixedRows = 0
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
+      ParentFont = False
       TabOrder = 0
     end
     object pnBuildPCButtons: TPanel
@@ -274,6 +280,7 @@ object MainForm: TMainForm
         NumbersOnly = True
         ParentFont = False
         TabOrder = 0
+        OnChange = edtFromPriceChange
       end
       object edtToPrice: TEdit
         Left = 50
@@ -288,6 +295,7 @@ object MainForm: TMainForm
         NumbersOnly = True
         ParentFont = False
         TabOrder = 1
+        OnChange = edtToPriceChange
       end
       object btnBuildPC: TButton
         Left = 50
@@ -302,6 +310,7 @@ object MainForm: TMainForm
         Font.Style = []
         ParentFont = False
         TabOrder = 2
+        OnClick = btnBuildPCClick
       end
     end
   end

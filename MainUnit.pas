@@ -52,9 +52,12 @@ type
     procedure btnDeleteComponentClick(Sender: TObject);
     procedure btnDeleteTypeClick(Sender: TObject);
     procedure SetControlBox;
+    procedure edtFromPriceChange(Sender: TObject);
+    procedure edtToPriceChange(Sender: TObject);
+    procedure btnBuildPCClick(Sender: TObject);
   private
     FExitMode: Integer;
-    procedure FillCompatibleList(Code1: Integer);
+    procedure FillCompatibleList(CompatibleInfo1: TCompatibleInfo);
     procedure ViewComponentList(Borders: TListBorders);
     procedure ViewTypeList();
   public
@@ -73,7 +76,8 @@ var
   TmpType: PTypeLI;
   Res: TListBorders;
   ComponentInfo: TComponentInfo;
-  Code1, Code2, I: Integer;
+  I: Integer;
+  CompatibleInfo: TCompatibleInfo;
 begin
   with ComponentForm do
   begin
@@ -118,8 +122,9 @@ begin
         IsInStock := chbStock.Checked;
         Description := mDescription.Text;
       end;
-      Code1 := ComponentInfo.ComponentCode;
-      FillCompatibleList(Code1);
+      CompatibleInfo.ComponentCode := ComponentInfo.ComponentCode;
+      CompatibleInfo.TypeCode := ComponentInfo.TypeCode;
+      FillCompatibleList(CompatibleInfo);
       ListsModel.AddComponent(ComponentInfo);
 
       with sgListInfo, ComponentInfo do
@@ -160,6 +165,61 @@ begin
       end;
       cbLists.Items.Add(TypeInfo.TypeName);
     end;
+  end;
+end;
+
+procedure TMainForm.btnBuildPCClick(Sender: TObject);
+
+var
+  PriceFrom, PriceTo: Integer;
+  ComputerBuild: array of Integer;
+  TmpType: PTypeLI;
+  Borders: TListBorders;
+  TmpComponent: PComponentLI;
+  IsCompatible: Boolean;
+
+  // procedure SetComputer(Index: Integer);
+  // var
+  // I: Integer;
+  // begin
+  // if Index = Length(ComputerBuild) then
+  // begin
+  // with sgComputersInfo do
+  // begin
+  // TmpType := ListsModel.TypeList;
+  // for I := 0 to Length(ComputerBuild) - 1 do
+  // begin
+  // Cells[RowCount - 1, I] := ListsModel.GetComponent(ComputerBuild[I], TmpType^.Info.TypeCode)^.Info.Model;
+  // TmpType := TmpType^.Next;
+  // end;
+  // RowCount := RowCount + 1;
+  // end;
+  // end
+  // else
+  // begin
+  // Borders := ListsModel.GetComponentListBorders(TmpType^.Info.TypeCode);
+  // if Borders.Last <> nil then
+  // Borders.Last := Borders.Last^.Next;
+  // while Borders.First <> Borders.Last do
+  // begin
+  // for I := 0 to Index - 1 do
+  // begin
+  // if not IsCompatible( then
+  //
+  // end;
+  // Borders.First := Borders.First^.Next;
+  // end;
+  // end;
+  // end;
+
+begin
+  PriceFrom := StrToInt(edtFromPrice.Text);
+  PriceTo := StrToInt(edtToPrice.Text);
+  if PriceFrom > PriceTo then
+    ShowMessage('Fill in the price correctly')
+  else
+  begin
+    SetLength(ComputerBuild, sgComputersInfo.ColCount - 2);
   end;
 end;
 
@@ -213,6 +273,7 @@ var
   CurrComaptibleList: PCompatibleList;
   Res: TListBorders;
   I, Code2: Integer;
+  CompatibleInfo: TCompatibleInfo;
 begin
   with ComponentForm, sgListInfo do
   begin
@@ -233,7 +294,7 @@ begin
         Enabled := False;
       end;
 
-      FillListBox;
+      FillListBox(StrToInt(Cells[1, Row]));
 
       CurrComaptibleList := ListsModel.GetCompatibleList(StrToInt(Cells[0, Row]));
       with chlbCompatibleComponents do
@@ -257,7 +318,9 @@ begin
         end;
 
         ListsModel.DeleteCompatibleList(CurrComaptibleList);
-        FillCompatibleList(StrToInt(Cells[0, Row]));
+        CompatibleInfo.ComponentCode := StrToInt(Cells[0, Row]);
+        CompatibleInfo.TypeCode := StrToInt(Cells[1, Row]);
+        FillCompatibleList(CompatibleInfo);
 
         Cells[2, Row] := edtModel.Text;
         Cells[3, Row] := mDescription.Text;;
@@ -331,7 +394,7 @@ begin
       Cells[5, 0] := 'In stock';
       while TmpCompatibleI <> nil do
       begin
-        TmpComponent := ListsModel.GetComponent(TmpCompatibleI^.ComponentCode);
+        TmpComponent := ListsModel.GetComponent(TmpCompatibleI^.Info.ComponentCode);
         with TmpComponent^.Info do
         begin
           Cells[0, I] := IntToStr(ComponentCode);
@@ -373,18 +436,30 @@ begin
   end;
 end;
 
-procedure TMainForm.FillCompatibleList(Code1: Integer);
+procedure TMainForm.edtFromPriceChange(Sender: TObject);
+begin
+  btnBuildPC.Enabled := (edtFromPrice.Text <> '') and (edtToPrice.Text <> '');
+end;
+
+procedure TMainForm.edtToPriceChange(Sender: TObject);
+begin
+  btnBuildPC.Enabled := (edtFromPrice.Text <> '') and (edtToPrice.Text <> '');
+end;
+
+procedure TMainForm.FillCompatibleList(CompatibleInfo1: TCompatibleInfo);
 var
-  I, Code2: Integer;
+  I: Integer;
+  CompatibleInfo2: TCompatibleInfo;
 begin
   with ComponentForm.chlbCompatibleComponents do
     for I := 0 to Items.Count - 1 do
     begin
       if Checked[I] then
       begin
-        Code2 := StrToInt(Copy(Items[I], 1, Pos(' ', Items[I]) - 1));
-        ListsModel.AddCompatible(Code1, Code2);
-        ListsModel.AddCompatible(Code2, Code1);
+        CompatibleInfo2.ComponentCode := StrToInt(Copy(Items[I], 1, Pos(' ', Items[I]) - 1));
+        CompatibleInfo2.TypeCode := ListsModel.GetComponent(CompatibleInfo2.ComponentCode)^.Info.TypeCode;
+        ListsModel.AddCompatible(CompatibleInfo1, CompatibleInfo2);
+        ListsModel.AddCompatible(CompatibleInfo2, CompatibleInfo1);
       end;
     end;
 end;
@@ -399,7 +474,7 @@ begin
     if PressedBtn = 6 then
       ListsModel.SaveLists('lists\types.info', 'lists\components.info', 'lists\compatible.info');
   end;
-  ListsModel.FreeMemory;
+  ListsModel.Destroy;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -441,7 +516,35 @@ begin
 end;
 
 procedure TMainForm.menuBuildPCClick(Sender: TObject);
+var
+  Tmp: PTypeLI;
+  I: Integer;
 begin
+  btnBuildPC.Enabled := False;
+  edtFromPrice.Text := '';
+  edtToPrice.Text := '';
+  Tmp := ListsModel.TypeList;
+  I := 1;
+  with sgComputersInfo do
+  begin
+    DefaultColWidth := 100;
+    ColWidths[0] := 60;
+    DefaultRowHeight := 30;
+    ColCount := 2;
+    FixedCols := 1;
+    RowCount := 2;
+    FixedRows := 1;
+    Rows[1].Clear;
+    while Tmp <> nil do
+    begin
+      Cols[I].Text := Tmp^.Info.TypeName;
+      ColCount := ColCount + 1;
+      Tmp := Tmp^.Next;
+      Inc(I);
+    end;
+    ColWidths[ColCount - 1] := -1;
+    RowHeights[RowCount - 1] := -1;
+  end;
   pnBuildPC.Visible := True;
   pnLists.Visible := False;
 end;
