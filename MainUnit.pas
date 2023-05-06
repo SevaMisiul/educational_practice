@@ -38,28 +38,34 @@ type
     btnDeleteType: TButton;
     pnComponentListButtons: TPanel;
     procedure FormCreate(Sender: TObject);
-    procedure cbListsChange(Sender: TObject);
-    procedure btnAddComponentClick(Sender: TObject);
-    procedure menuExitSaveClick(Sender: TObject);
-    procedure menuExitClick(Sender: TObject);
-    procedure btnAddTypeClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure btnEditComponentClick(Sender: TObject);
+    procedure btnAddTypeClick(Sender: TObject);
     procedure btnEditTypeClick(Sender: TObject);
+    procedure btnDeleteTypeClick(Sender: TObject);
+    procedure btnAddComponentClick(Sender: TObject);
+    procedure btnEditComponentClick(Sender: TObject);
+    procedure btnDeleteComponentClick(Sender: TObject);
     procedure menuWatchListsClick(Sender: TObject);
     procedure menuBuildPCClick(Sender: TObject);
+    procedure menuExitSaveClick(Sender: TObject);
+    procedure menuExitClick(Sender: TObject);
     procedure btnShowCompatibleClick(Sender: TObject);
-    procedure btnDeleteComponentClick(Sender: TObject);
-    procedure btnDeleteTypeClick(Sender: TObject);
-    procedure SetControlBox;
     procedure edtFromPriceChange(Sender: TObject);
     procedure edtToPriceChange(Sender: TObject);
     procedure btnBuildPCClick(Sender: TObject);
+    procedure sgComputersInfoClick(Sender: TObject);
+    procedure sgListInfoSelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+    procedure cbListsChange(Sender: TObject);
   private
     FExitMode: Integer;
+    procedure AddTypeView(TypeInfo: TTypeInfo);
+    procedure EditTypeView(TypeInfo: TTypeInfo);
+    procedure SetControlBox;
+    procedure AddComputerRow(Computer: PComputerLI);
     procedure FillCompatibleList(CompatibleInfo1: TCompatibleInfo);
     procedure ViewComponentList(Borders: TListBorders);
     procedure ViewTypeList();
+    procedure CheckButtonsState(Row: Integer);
   public
     property ExitMode: Integer read FExitMode write FExitMode;
   end;
@@ -70,6 +76,34 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TMainForm.AddComputerRow(Computer: PComputerLI);
+var
+  I, Price: Integer;
+begin
+  Price := 0;
+  with sgComputersInfo do
+  begin
+    for I := 0 to ColCount - 2 do
+    begin
+      Cells[I, RowCount - 1] := Computer^.Build[I].Model;
+      Inc(Price, Computer.Build[I].Price);
+    end;
+    Cells[ColCount - 1, RowCount - 1] := IntToStr(Price);
+    RowCount := RowCount + 1;
+  end;
+end;
+
+procedure TMainForm.AddTypeView(TypeInfo: TTypeInfo);
+begin
+  with sgListInfo, TypeInfo do
+  begin
+    RowCount := RowCount + 1;
+    Cells[0, RowCount - 1] := IntToStr(TypeCode);
+    Cells[1, RowCount - 1] := TypeName;
+  end;
+  cbLists.Items.Add(TypeInfo.TypeName);
+end;
 
 procedure TMainForm.btnAddComponentClick(Sender: TObject);
 var
@@ -147,79 +181,60 @@ end;
 procedure TMainForm.btnAddTypeClick(Sender: TObject);
 var
   TypeInfo: TTypeInfo;
+  Res: TModalResult;
 begin
-  with TypeForm do
+  Res := TypeForm.ShowForNewType(TypeInfo);
+
+  if Res = mrOk then
   begin
-    edtType.Text := '';
-    TypeForm.ShowModal;
-    if IsSave then
-    begin
-      TypeInfo.TypeCode := ListsModel.TypeID + 1;
-      TypeInfo.TypeName := edtType.Text;
-      ListsModel.AddType(TypeInfo);
-      with sgListInfo, TypeInfo do
-      begin
-        RowCount := RowCount + 1;
-        Cells[0, RowCount - 1] := IntToStr(TypeCode);
-        Cells[1, RowCount - 1] := TypeName;
-      end;
-      cbLists.Items.Add(TypeInfo.TypeName);
-    end;
+    ListsModel.AddType(TypeInfo);
+    AddTypeView(TypeInfo);
   end;
 end;
 
 procedure TMainForm.btnBuildPCClick(Sender: TObject);
-
 var
-  PriceFrom, PriceTo: Integer;
-  ComputerBuild: array of Integer;
   TmpType: PTypeLI;
-  Borders: TListBorders;
-  TmpComponent: PComponentLI;
-  IsCompatible: Boolean;
-
-  // procedure SetComputer(Index: Integer);
-  // var
-  // I: Integer;
-  // begin
-  // if Index = Length(ComputerBuild) then
-  // begin
-  // with sgComputersInfo do
-  // begin
-  // TmpType := ListsModel.TypeList;
-  // for I := 0 to Length(ComputerBuild) - 1 do
-  // begin
-  // Cells[RowCount - 1, I] := ListsModel.GetComponent(ComputerBuild[I], TmpType^.Info.TypeCode)^.Info.Model;
-  // TmpType := TmpType^.Next;
-  // end;
-  // RowCount := RowCount + 1;
-  // end;
-  // end
-  // else
-  // begin
-  // Borders := ListsModel.GetComponentListBorders(TmpType^.Info.TypeCode);
-  // if Borders.Last <> nil then
-  // Borders.Last := Borders.Last^.Next;
-  // while Borders.First <> Borders.Last do
-  // begin
-  // for I := 0 to Index - 1 do
-  // begin
-  // if not IsCompatible( then
-  //
-  // end;
-  // Borders.First := Borders.First^.Next;
-  // end;
-  // end;
-  // end;
-
+  PriceFrom, PriceTo, I: Integer;
+  Tmp: PComputerLI;
 begin
   PriceFrom := StrToInt(edtFromPrice.Text);
   PriceTo := StrToInt(edtToPrice.Text);
   if PriceFrom > PriceTo then
     ShowMessage('Fill in the price correctly')
-  else
+  else if ListsModel.TypeCount <> 0 then
   begin
-    SetLength(ComputerBuild, sgComputersInfo.ColCount - 2);
+    with sgComputersInfo do
+    begin
+      RowHeights[0] := 30;
+      DefaultColWidth := 200;
+      DefaultRowHeight := 30;
+      ColCount := ListsModel.TypeCount + 1;
+      RowCount := 2;
+      Rows[1].Clear;
+      FixedRows := 1;
+
+      TmpType := ListsModel.TypeList;
+      for I := 0 to ListsModel.TypeCount - 1 do
+      begin
+        Cells[I, 0] := TmpType^.Info.TypeName;
+        TmpType := TmpType^.Next;
+      end;
+
+      ColWidths[ColCount - 1] := 80;
+      Cols[ColCount - 1].Text := 'Price';
+    end;
+
+    ListsModel.ComputerAssembly(PriceFrom, PriceTo);
+
+    Tmp := ListsModel.GetComputerList;
+    while Tmp <> nil do
+    begin
+      AddComputerRow(Tmp);
+      Tmp := Tmp^.Next;
+    end;
+
+    sgComputersInfo.RowHeights[sgComputersInfo.RowCount - 1] := -1;
   end;
 end;
 
@@ -240,6 +255,7 @@ begin
       end;
     end;
   end;
+  CheckButtonsState(sgListInfo.Row);
 end;
 
 procedure TMainForm.btnDeleteTypeClick(Sender: TObject);
@@ -265,6 +281,7 @@ begin
       end;
     end;
   end;
+  CheckButtonsState(sgListInfo.Row);
 end;
 
 procedure TMainForm.btnEditComponentClick(Sender: TObject);
@@ -309,7 +326,7 @@ begin
       if IsSave then
       begin
         TmpComponent := ListsModel.GetComponent(StrToInt(Cells[0, Row]), StrToInt(Cells[1, Row]));
-        with TmpComponent.Info do
+        with TmpComponent^.Info do
         begin
           Model := edtModel.Text;
           Price := StrToInt(edtPrice.Text);
@@ -336,23 +353,26 @@ end;
 
 procedure TMainForm.btnEditTypeClick(Sender: TObject);
 var
+  Res: TModalResult;
   I: Integer;
+  TypeInfo: TTypeInfo;
+  Tmp: PTypeLI;
 begin
-  with TypeForm, sgListInfo do
+  with sgListInfo do
   begin
-    if Cells[0, Row] <> '' then
+    Tmp := ListsModel.GetType(StrToInt(Cells[0, Row]));
+    TypeInfo := Tmp^.Info;
+
+    Res := TypeForm.ShowForEditType(TypeInfo);
+
+    if Res = mrOk then
     begin
-      edtType.Text := Cells[1, Row];
-      TypeForm.ShowModal;
-      if IsSave then
-      begin
-        ListsModel.GetType(StrToInt(Cells[0, Row]))^.Info.TypeName := edtType.Text;
-        with cbLists do
-          for I := 0 to Items.Count do
-            if Items[I] = Cells[1, Row] then
-              Items[I] := edtType.Text;
-        Cells[1, Row] := edtType.Text;
-      end;
+      Tmp^.Info := TypeInfo;
+      with cbLists do
+        for I := 0 to Items.Count do
+          if Items[I] = Cells[1, Row] then
+            Items[I] := TypeInfo.TypeName;
+      Cells[1, Row] := TypeInfo.TypeName;
     end;
   end;
 end;
@@ -434,6 +454,36 @@ begin
     pnTypeListButtons.Visible := False;
     ViewComponentList(ListsModel.GetComponentListBorders(ListsModel.GetTypeCode(cbLists.Text)));
   end;
+  CheckButtonsState(sgListInfo.Row);
+end;
+
+procedure TMainForm.CheckButtonsState(Row: Integer);
+begin
+  if sgListInfo.Cells[0, Row] = '' then
+  begin
+    btnDeleteComponent.Enabled := False;
+    btnDeleteType.Enabled := False;
+
+    btnEditComponent.Enabled := False;
+    btnEditType.Enabled := False;
+
+    btnShowCompatible.Enabled := False;
+  end
+  else
+  begin
+    btnDeleteComponent.Enabled := True;
+    btnDeleteType.Enabled := True;
+
+    btnEditComponent.Enabled := True;
+    btnEditType.Enabled := True;
+
+    btnShowCompatible.Enabled := True;
+  end;
+end;
+
+procedure TMainForm.EditTypeView(TypeInfo: TTypeInfo);
+begin
+
 end;
 
 procedure TMainForm.edtFromPriceChange(Sender: TObject);
@@ -517,33 +567,17 @@ end;
 
 procedure TMainForm.menuBuildPCClick(Sender: TObject);
 var
-  Tmp: PTypeLI;
   I: Integer;
 begin
   btnBuildPC.Enabled := False;
   edtFromPrice.Text := '';
   edtToPrice.Text := '';
-  Tmp := ListsModel.TypeList;
-  I := 1;
   with sgComputersInfo do
   begin
-    DefaultColWidth := 100;
-    ColWidths[0] := 60;
-    DefaultRowHeight := 30;
-    ColCount := 2;
-    FixedCols := 1;
-    RowCount := 2;
-    FixedRows := 1;
-    Rows[1].Clear;
-    while Tmp <> nil do
-    begin
-      Cols[I].Text := Tmp^.Info.TypeName;
-      ColCount := ColCount + 1;
-      Tmp := Tmp^.Next;
-      Inc(I);
-    end;
-    ColWidths[ColCount - 1] := -1;
-    RowHeights[RowCount - 1] := -1;
+    ColCount := 1;
+    RowCount := 1;
+    Rows[0].Clear;
+    RowHeights[0] := -1;
   end;
   pnBuildPC.Visible := True;
   pnLists.Visible := False;
@@ -581,6 +615,16 @@ begin
     cbLists.Items.Add(TmpType^.Info.TypeName);
     TmpType := TmpType^.Next;
   end;
+end;
+
+procedure TMainForm.sgComputersInfoClick(Sender: TObject);
+begin
+  //
+end;
+
+procedure TMainForm.sgListInfoSelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+begin
+  CheckButtonsState(ARow);
 end;
 
 procedure TMainForm.ViewComponentList(Borders: TListBorders);

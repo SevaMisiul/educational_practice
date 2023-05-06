@@ -13,7 +13,7 @@ object TypeForm: TTypeForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnShow = FormShow
+  OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 13
   object lbTypeText: TLabel
@@ -33,7 +33,7 @@ object TypeForm: TTypeForm
     Left = 30
     Top = 45
     Width = 187
-    Height = 30
+    Height = 27
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -53,9 +53,9 @@ object TypeForm: TTypeForm
     Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = []
+    ModalResult = 2
     ParentFont = False
     TabOrder = 1
-    OnClick = btnCancelClick
   end
   object btnOk: TButton
     Left = 142
@@ -68,8 +68,8 @@ object TypeForm: TTypeForm
     Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = []
+    ModalResult = 1
     ParentFont = False
     TabOrder = 2
-    OnClick = btnOkClick
   end
 end

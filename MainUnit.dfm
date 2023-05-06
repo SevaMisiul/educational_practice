@@ -104,6 +104,7 @@ object MainForm: TMainForm
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
       ParentFont = False
       TabOrder = 1
+      OnSelectCell = sgListInfoSelectCell
     end
     object cbLists: TComboBox
       Left = 0
@@ -217,6 +218,7 @@ object MainForm: TMainForm
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect, goFixedRowDefAlign]
       ParentFont = False
       TabOrder = 0
+      OnClick = sgComputersInfoClick
     end
     object pnBuildPCButtons: TPanel
       Left = 993

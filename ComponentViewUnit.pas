@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.CheckLst, ModelUnit;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.CheckLst;
 
 type
   TComponentForm = class(TForm)
@@ -38,6 +38,9 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+  ModelUnit;
 
 procedure TComponentForm.btnCancelClick(Sender: TObject);
 begin

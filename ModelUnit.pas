@@ -24,6 +24,16 @@ type
     TypeCode: Integer;
   end;
 
+  TComputerBuild = array of TComponentInfo;
+
+  PComputerLI = ^TComputerLI;
+
+  TComputerLI = record
+    Build: TComputerBuild;
+    Index: Integer;
+    Next: PComputerLI;
+  end;
+
   PComponentLI = ^TComponentLI;
 
   TComponentLI = record
@@ -65,26 +75,34 @@ type
     FTypeList: PTypeLI;
     FComponentHeader: PComponentLI;
     FCompatibleList: PCompatibleList;
-    FComponentID, FTypeID: Integer;
+    FComponentID, FTypeID, FTypeCount: Integer;
+    FComputerList: PComputerLI;
     procedure DeleteCompatibleItem(Code1, Code2: Integer);
+    function GetComputer(Index: Integer): PComputerLI;
   public
     constructor Create;
     destructor Destroy; override;
     procedure AddCompatible(const CompatibleInfo1, CompatibleInfo2: TCompatibleInfo);
     procedure AddComponent(const Info: TComponentInfo);
     procedure AddType(const Info: TTypeInfo);
+    procedure AddComputer(const Build: TComputerBuild);
     function GetComponent(ComponentCode: Integer; TypeCode: Integer = -1): PComponentLI;
     function GetComponentListBorders(TypeCode: Integer = -1): TListBorders;
     function GetCompatibleList(ComponentCode: Integer): PCompatibleList;
     function GetType(TypeCode: Integer): PTypeLI;
     function GetTypeCode(TypeName: string): Integer;
+    function GetComputerList: PComputerLI;
     function IsCompatible(CompatibleL: PCompatibleList; Code2: Integer): Boolean;
+    procedure ComputerAssembly(PriceFrom, PriceTo: Integer);
     procedure SaveLists(TypeLPath, ComponentLPath, CompatibleLPath: string);
     procedure ReadLists(TypeLPath, ComponentLPath, CompatibleLPath: string);
     procedure DeleteComponent(ComponentCode, TypeCode: Integer);
     procedure DeleteType(TypeCode: Integer);
     procedure DeleteCompatibleList(CompatibleL: PCompatibleList);
-
+    procedure DeleteComputerList;
+    { properties }
+    property TypeCount: Integer read FTypeCount;
+    property ComputerList[Index: Integer]: PComputerLI read GetComputer;
     property ComponentID: Integer read FComponentID;
     property TypeID: Integer read FTypeID;
     property TypeList: PTypeLI read FTypeList;
@@ -146,6 +164,20 @@ begin
   FComponentID := Max(FComponentID, Info.ComponentCode);
 end;
 
+procedure TModel.AddComputer(const Build: TComputerBuild);
+var
+  Tmp: PComputerLI;
+begin
+  new(Tmp);
+  Tmp^.Build := Copy(Build, 0, TypeCount);
+  if FComputerList <> nil then
+    Tmp^.Index := FComputerList^.Index + 1
+  else
+    Tmp^.Index := 0;
+  Tmp^.Next := FComputerList;
+  FComputerList := Tmp;
+end;
+
 procedure TModel.AddType(const Info: TTypeInfo);
 var
   Tmp: PTypeLI;
@@ -155,18 +187,84 @@ begin
   Tmp^.Next := FTypeList;
   Tmp^.Last := nil;
   FTypeList := Tmp;
+  Inc(FTypeCount);
   FTypeID := Max(Info.TypeCode, FTypeID);
+end;
+
+procedure TModel.ComputerAssembly(PriceFrom, PriceTo: Integer);
+var
+  TmpType: PTypeLI;
+  ComputerBuild: TComputerBuild;
+  CurrCompatibleList: PCompatibleList;
+  Borders: TListBorders;
+
+  procedure SetComputer(ComponentType: PTypeLI; ArrIndex, CurrPrice: Integer);
+  var
+    Component: TComponentInfo;
+    TmpCompatibleItem: PCompatibleLI;
+    IsCompatibleAll: Boolean;
+    I: Integer;
+  begin
+    if (ComponentType = nil) and (CurrPrice >= PriceFrom) then
+      AddComputer(ComputerBuild)
+    else if ComponentType <> nil then
+    begin
+      TmpCompatibleItem := CurrCompatibleList^.Header^.Next;
+      while TmpCompatibleItem <> nil do
+      begin
+        with TmpCompatibleItem^.Info do
+          if ComponentType^.Info.TypeCode = TypeCode then
+          begin
+            Component := ListsModel.GetComponent(ComponentCode, TypeCode)^.Info;
+            if CurrPrice + Component.Price <= PriceTo then
+            begin
+              IsCompatibleAll := True;
+              for I := 1 to ArrIndex - 1 do
+              begin
+                IsCompatibleAll := IsCompatibleAll and
+                  ListsModel.IsCompatible(ListsModel.GetCompatibleList(ComputerBuild[I].ComponentCode),
+                  Component.ComponentCode);
+              end;
+              if IsCompatibleAll then
+              begin
+                ComputerBuild[ArrIndex] := Component;
+                SetComputer(ComponentType^.Next, ArrIndex + 1, CurrPrice + Component.Price);
+              end;
+            end;
+          end;
+        TmpCompatibleItem := TmpCompatibleItem^.Next;
+      end;
+    end;
+  end;
+
+begin
+  DeleteComputerList;
+  TmpType := ListsModel.TypeList;
+  SetLength(ComputerBuild, FTypeCount);
+  Borders := ListsModel.GetComponentListBorders(TmpType^.Info.TypeCode);
+  if Borders.Last <> nil then
+    Borders.Last := Borders.Last^.Next;
+  while Borders.First <> Borders.Last do
+  begin
+    CurrCompatibleList := ListsModel.GetCompatibleList(Borders.First^.Info.ComponentCode);
+    ComputerBuild[0] := Borders.First^.Info;
+    SetComputer(TmpType^.Next, 1, ComputerBuild[0].Price);
+    Borders.First := Borders.First^.Next;
+  end;
+  ComputerBuild := nil;
 end;
 
 constructor TModel.Create;
 begin
   inherited Create;
 
+  FComputerList := nil;
   FTypeList := nil;
   new(FComponentHeader);
   FComponentHeader^.Next := nil;
   FCompatibleList := nil;
 
+  FTypeCount := 0;
   FComponentID := 0;
   FTypeID := 0;
 end;
@@ -244,12 +342,25 @@ begin
   DeleteCompatibleList(GetCompatibleList(ComponentCode));
 end;
 
+procedure TModel.DeleteComputerList;
+var
+  Tmp: PComputerLI;
+begin
+  while FComputerList <> nil do
+  begin
+    Tmp := FComputerList;
+    FComputerList := FComputerList^.Next;
+    Dispose(Tmp);
+  end;
+end;
+
 procedure TModel.DeleteType(TypeCode: Integer);
 var
   ComponentBorders: TListBorders;
   Tmp: PComponentLI;
   TmpType, P: PTypeLI;
 begin
+  Dec(FTypeCount);
   ComponentBorders := GetComponentListBorders(TypeCode);
   if ComponentBorders.Last <> nil then
   begin
@@ -283,6 +394,8 @@ var
   TmpType: PTypeLI;
   TmpComponent: PComponentLI;
 begin
+  DeleteComputerList;
+
   while FTypeList <> nil do
   begin
     TmpType := FTypeList;
@@ -346,6 +459,18 @@ begin
 
     result.First := FComponentHeader^.Next;
   end;
+end;
+
+function TModel.GetComputer(Index: Integer): PComputerLI;
+begin
+  result := FComputerList;
+  while result^.Index <> Index do
+    result := result^.Next;
+end;
+
+function TModel.GetComputerList: PComputerLI;
+begin
+  result := FComputerList;
 end;
 
 function TModel.GetType(TypeCode: Integer): PTypeLI;

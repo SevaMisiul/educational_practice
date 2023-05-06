@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, ModelUnit;
 
 type
   TTypeForm = class(TForm)
@@ -12,13 +12,11 @@ type
     edtType: TEdit;
     btnCancel: TButton;
     btnOk: TButton;
-    procedure btnCancelClick(Sender: TObject);
-    procedure btnOkClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
-    FIsSave: Boolean;
   public
-    property IsSave: Boolean read FIsSave;
+    function ShowForNewType(var TypeInfo: TTypeInfo): TModalResult;
+    function ShowForEditType(Var TypeInfo: TTypeInfo): TModalResult;
   end;
 
 var
@@ -28,25 +26,38 @@ implementation
 
 {$R *.dfm}
 
-procedure TTypeForm.btnCancelClick(Sender: TObject);
+procedure TTypeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  Close;
-end;
-
-procedure TTypeForm.btnOkClick(Sender: TObject);
-begin
-  if (edtType.Text = '') then
-    ShowMessage('Fill in required fields')
-  else
+  if (Self.ModalResult = mrOk) and (edtType.Text = '') then
   begin
-    FIsSave := True;
-    Close;
+    ShowMessage('Fill in required fields');
+    CanClose := False;
   end;
 end;
 
-procedure TTypeForm.FormShow(Sender: TObject);
+function TTypeForm.ShowForEditType(var TypeInfo: TTypeInfo): TModalResult;
 begin
-  FIsSave := False;
+  edtType.Text := TypeInfo.TypeName;
+
+  result := ShowModal;
+
+  if result = mrOk then
+  begin
+    TypeInfo.TypeName := edtType.Text;
+  end;
+end;
+
+function TTypeForm.ShowForNewType(var TypeInfo: TTypeInfo): TModalResult;
+begin
+  edtType.Text := '';
+
+  result := ShowModal;
+
+  if result = mrOk then
+  begin
+    TypeInfo.TypeCode := ListsModel.TypeID + 1;
+    TypeInfo.TypeName := edtType.Text;
+  end;
 end;
 
 end.
