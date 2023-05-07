@@ -219,6 +219,7 @@ object MainForm: TMainForm
       ParentFont = False
       TabOrder = 0
       OnClick = sgComputersInfoClick
+      ExplicitLeft = -6
     end
     object pnBuildPCButtons: TPanel
       Left = 993
@@ -313,6 +314,36 @@ object MainForm: TMainForm
         ParentFont = False
         TabOrder = 2
         OnClick = btnBuildPCClick
+      end
+      object btnSortDecrease: TButton
+        Left = 50
+        Top = 290
+        Width = 200
+        Height = 30
+        Caption = 'Sort by decreasing'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 3
+        OnClick = btnSortDecreaseClick
+      end
+      object btnSortIncrease: TButton
+        Left = 50
+        Top = 350
+        Width = 200
+        Height = 30
+        Caption = 'Sort by increasing'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 4
+        OnClick = btnSortIncreaseClick
       end
     end
   end

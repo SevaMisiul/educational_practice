@@ -13,7 +13,7 @@ object ComponentForm: TComponentForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnShow = FormShow
+  OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 13
   object lbPriceText: TLabel
@@ -84,7 +84,7 @@ object ComponentForm: TComponentForm
   object cbComponentTypes: TComboBox
     Left = 30
     Top = 50
-    Width = 201
+    Width = 205
     Height = 27
     Style = csDropDownList
     Font.Charset = DEFAULT_CHARSET
@@ -94,11 +94,12 @@ object ComponentForm: TComponentForm
     Font.Style = []
     ParentFont = False
     TabOrder = 0
+    OnChange = cbComponentTypesChange
   end
   object edtPrice: TEdit
     Left = 30
     Top = 110
-    Width = 201
+    Width = 205
     Height = 27
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -147,6 +148,7 @@ object ComponentForm: TComponentForm
     Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = []
+    MaxLength = 25
     ParentFont = False
     TabOrder = 1
   end
@@ -175,9 +177,9 @@ object ComponentForm: TComponentForm
     Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = []
+    ModalResult = 1
     ParentFont = False
     TabOrder = 6
-    OnClick = btnOkClick
   end
   object btnCancel: TButton
     Left = 310
@@ -190,8 +192,8 @@ object ComponentForm: TComponentForm
     Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = []
+    ModalResult = 2
     ParentFont = False
     TabOrder = 7
-    OnClick = btnCancelClick
   end
 end

@@ -13,7 +13,7 @@ type
   TComponentInfo = record
     ComponentCode: Integer;
     TypeCode: Integer;
-    Model: string[20];
+    Model: string[25];
     Description: string[100];
     Price: Integer;
     IsInStock: Boolean;
@@ -24,7 +24,15 @@ type
     TypeCode: Integer;
   end;
 
-  TComputerBuild = array of TComponentInfo;
+  TCompatibleArr = array of TCompatibleInfo;
+
+  TComputerArr = array of TComponentInfo;
+
+  TComputerBuild = record
+    Components: TComputerArr;
+    Price: Integer;
+    IsInStock: Boolean;
+  end;
 
   PComputerLI = ^TComputerLI;
 
@@ -70,22 +78,52 @@ type
     Last: PComponentLI;
   end;
 
+  TOnTypeUpdated = procedure(TypeInfo: TTypeInfo) of object;
+
+  TOnListChanged = procedure of object;
+
+  TOnComponentUpdated = procedure(ComponentInfo: TComponentInfo) of object;
+
+  TComp = function(Price1, Price2: Integer): Boolean;
+
   TModel = class(TObject)
   private
+    FLastTypeUpdate: TOnTypeUpdated;
+    FOneTypeUpdate: TOnTypeUpdated;
+    FTypesUpdate: TOnListChanged;
+
+    FLastComponentUpdate: TOnComponentUpdated;
+    FOneComponentUpdate: TOnComponentUpdated;
+    FComponentDeleteUpdate: TOnListChanged;
+
+    FUpdateComputerView: TOnListChanged;
     FTypeList: PTypeLI;
+    FIsUpdatingType, FIsUpdatingComponent: Boolean;
     FComponentHeader: PComponentLI;
     FCompatibleList: PCompatibleList;
     FComponentID, FTypeID, FTypeCount: Integer;
     FComputerList: PComputerLI;
     procedure DeleteCompatibleItem(Code1, Code2: Integer);
     function GetComputer(Index: Integer): PComputerLI;
+    procedure SetLastTypeUpdate(const Value: TOnTypeUpdated);
+    procedure SetTypesUpdate(const Value: TOnListChanged);
+    procedure SetOneTypeUpdate(const Value: TOnTypeUpdated);
+    procedure SetLastComponentUpdate(const Value: TOnComponentUpdated);
+    procedure SetOneComponentUpdate(const Value: TOnComponentUpdated);
+    procedure SetComponentsUpdate(const Value: TOnListChanged);
+    procedure SetComputerView(const Value: TOnListChanged);
   public
     constructor Create;
     destructor Destroy; override;
     procedure AddCompatible(const CompatibleInfo1, CompatibleInfo2: TCompatibleInfo);
-    procedure AddComponent(const Info: TComponentInfo);
+    procedure AddComponent(const Info: TComponentInfo; CompatibleArr: TCompatibleArr);
     procedure AddType(const Info: TTypeInfo);
-    procedure AddComputer(const Build: TComputerBuild);
+    procedure AddComputer(const Build: TComputerArr);
+    procedure SortComputerList(Comp: TComp);
+    procedure SetCompatibleFromArr(const CompatibleInfo: TCompatibleInfo; const Arr: TCompatibleArr);
+    procedure SetType(const ListItem: PTypeLI; const TypeInfo: TTypeInfo);
+    procedure SetComponent(const ComponentItem: PComponentLI; const ComponentInfo: TComponentInfo;
+      const CompatibleArr: TCompatibleArr);
     function GetComponent(ComponentCode: Integer; TypeCode: Integer = -1): PComponentLI;
     function GetComponentListBorders(TypeCode: Integer = -1): TListBorders;
     function GetCompatibleList(ComponentCode: Integer): PCompatibleList;
@@ -101,6 +139,16 @@ type
     procedure DeleteCompatibleList(CompatibleL: PCompatibleList);
     procedure DeleteComputerList;
     { properties }
+    property LastTypeUpdate: TOnTypeUpdated read FLastTypeUpdate write SetLastTypeUpdate;
+    property OneTypeUpdate: TOnTypeUpdated read FOneTypeUpdate write SetOneTypeUpdate;
+    property TypesUpdate: TOnListChanged read FTypesUpdate write SetTypesUpdate;
+
+    property LastComponentUpdate: TOnComponentUpdated read FLastComponentUpdate write SetLastComponentUpdate;
+    property OneComponentUpdate: TOnComponentUpdated read FOneComponentUpdate write SetOneComponentUpdate;
+    property ComponentDeleteUpdate: TOnListChanged read FComponentDeleteUpdate write SetComponentsUpdate;
+
+    property UpdateComputerView: TOnListChanged read FUpdateComputerView write SetComputerView;
+
     property TypeCount: Integer read FTypeCount;
     property ComputerList[Index: Integer]: PComputerLI read GetComputer;
     property ComponentID: Integer read FComponentID;
@@ -109,6 +157,9 @@ type
     property ComponentHeader: PComponentLI read FComponentHeader;
     property CompatibleList: PCompatibleList read FCompatibleList;
   end;
+
+function UpperComp(Price1, Price2: Integer): Boolean;
+function LowerComp(Price1, Price2: Integer): Boolean;
 
 var
   ListsModel: TModel;
@@ -140,10 +191,11 @@ begin
   TmpItem^.Info := CompatibleInfo2;
 end;
 
-procedure TModel.AddComponent(const Info: TComponentInfo);
+procedure TModel.AddComponent(const Info: TComponentInfo; CompatibleArr: TCompatibleArr);
 var
   Tmp, LastComponent: PComponentLI;
   PrevType, CurrType: PTypeLI;
+  CompatibleInfo: TCompatibleInfo;
 begin
   new(Tmp);
 
@@ -162,14 +214,33 @@ begin
   Tmp^.Next := LastComponent^.Next;
   LastComponent^.Next := Tmp;
   FComponentID := Max(FComponentID, Info.ComponentCode);
+
+  CompatibleInfo.ComponentCode := Info.ComponentCode;
+  CompatibleInfo.TypeCode := Info.TypeCode;
+
+  SetCompatibleFromArr(CompatibleInfo, CompatibleArr);
+
+  if FIsUpdatingComponent and Assigned(LastComponentUpdate) then
+    LastComponentUpdate(Info);
 end;
 
-procedure TModel.AddComputer(const Build: TComputerBuild);
+procedure TModel.AddComputer(const Build: TComputerArr);
 var
   Tmp: PComputerLI;
+  IsInStock: Boolean;
+  I, Price: Integer;
 begin
+  IsInStock := True;
+  Price := 0;
   new(Tmp);
-  Tmp^.Build := Copy(Build, 0, TypeCount);
+  Tmp^.Build.Components := Copy(Build, 0, TypeCount);
+  for I := 0 to Length(Build) - 1 do
+  begin
+    IsInStock := IsInStock and Build[I].IsInStock;
+    Inc(Price, Build[I].Price);
+  end;
+  Tmp^.Build.IsInStock := IsInStock;
+  Tmp^.Build.Price := Price;
   if FComputerList <> nil then
     Tmp^.Index := FComputerList^.Index + 1
   else
@@ -189,12 +260,14 @@ begin
   FTypeList := Tmp;
   Inc(FTypeCount);
   FTypeID := Max(Info.TypeCode, FTypeID);
+  if FIsUpdatingType and Assigned(LastTypeUpdate) then
+    LastTypeUpdate(Info);
 end;
 
 procedure TModel.ComputerAssembly(PriceFrom, PriceTo: Integer);
 var
   TmpType: PTypeLI;
-  ComputerBuild: TComputerBuild;
+  ComputerBuild: TComputerArr;
   CurrCompatibleList: PCompatibleList;
   Borders: TListBorders;
 
@@ -251,6 +324,10 @@ begin
     SetComputer(TmpType^.Next, 1, ComputerBuild[0].Price);
     Borders.First := Borders.First^.Next;
   end;
+
+  if Assigned(UpdateComputerView) then
+    UpdateComputerView;
+
   ComputerBuild := nil;
 end;
 
@@ -340,6 +417,9 @@ begin
   TmpComponent^.Next := Tmp^.Next;
   Dispose(Tmp);
   DeleteCompatibleList(GetCompatibleList(ComponentCode));
+
+  if FIsUpdatingComponent and Assigned(ComponentDeleteUpdate) then
+    ComponentDeleteUpdate;
 end;
 
 procedure TModel.DeleteComputerList;
@@ -350,6 +430,7 @@ begin
   begin
     Tmp := FComputerList;
     FComputerList := FComputerList^.Next;
+    Tmp^.Build.Components := nil;
     Dispose(Tmp);
   end;
 end;
@@ -387,6 +468,9 @@ begin
     TmpType^.Next := P^.Next;
     Dispose(P);
   end;
+
+  if FIsUpdatingType and Assigned(TypesUpdate) then
+    TypesUpdate;
 end;
 
 destructor TModel.Destroy;
@@ -464,7 +548,7 @@ end;
 function TModel.GetComputer(Index: Integer): PComputerLI;
 begin
   result := FComputerList;
-  while result^.Index <> Index do
+  while (result <> nil) and (result^.Index <> Index) do
     result := result^.Next;
 end;
 
@@ -512,6 +596,11 @@ begin
     result := True;
 end;
 
+function LowerComp(Price1, Price2: Integer): Boolean;
+begin
+  result := Price1 <= Price2;
+end;
+
 procedure TModel.ReadLists(TypeLPath, ComponentLPath, CompatibleLPath: string);
 var
   TypeInfo: TTypeInfo;
@@ -522,6 +611,7 @@ var
   ComponentF: file of TComponentInfo;
   CompatibleF: file of TCompatibleInfo;
 begin
+  FIsUpdatingType := False;
   AssignFile(TypeF, TypeLPath);
   Reset(TypeF);
   while not EOF(TypeF) do
@@ -530,15 +620,18 @@ begin
     AddType(TypeInfo);
   end;
   CloseFile(TypeF);
+  FIsUpdatingType := True;
 
+  FIsUpdatingComponent := False;
   AssignFile(ComponentF, ComponentLPath);
   Reset(ComponentF);
   while not EOF(ComponentF) do
   begin
     read(ComponentF, ComponentInfo);
-    AddComponent(ComponentInfo);
+    AddComponent(ComponentInfo, nil);
   end;
   CloseFile(ComponentF);
+  FIsUpdatingComponent := True;
 
   AssignFile(CompatibleF, CompatibleLPath);
   Reset(CompatibleF);
@@ -611,6 +704,125 @@ begin
     TmpCompatibleList := TmpCompatibleList^.Next;
   end;
   CloseFile(CompatibleF);
+end;
+
+procedure TModel.SetCompatibleFromArr(const CompatibleInfo: TCompatibleInfo; const Arr: TCompatibleArr);
+var
+  I: Integer;
+begin
+  if Arr <> nil then
+    for I := 0 to Length(Arr) - 1 do
+    begin
+      AddCompatible(CompatibleInfo, Arr[I]);
+      AddCompatible(Arr[I], CompatibleInfo);
+    end;
+end;
+
+procedure TModel.SetComponent(const ComponentItem: PComponentLI; const ComponentInfo: TComponentInfo;
+  const CompatibleArr: TCompatibleArr);
+var
+  CompatibleInfo: TCompatibleInfo;
+begin
+  ComponentItem^.Info := ComponentInfo;
+
+  CompatibleInfo.ComponentCode := ComponentInfo.ComponentCode;
+  CompatibleInfo.TypeCode := ComponentInfo.TypeCode;
+  DeleteCompatibleList(GetCompatibleList(ComponentInfo.ComponentCode));
+  SetCompatibleFromArr(CompatibleInfo, CompatibleArr);
+
+  if FIsUpdatingComponent and Assigned(OneComponentUpdate) then
+    OneComponentUpdate(ComponentInfo);
+end;
+
+procedure TModel.SetComponentsUpdate(const Value: TOnListChanged);
+begin
+  FComponentDeleteUpdate := Value;
+end;
+
+procedure TModel.SetComputerView(const Value: TOnListChanged);
+begin
+  FUpdateComputerView := Value;
+end;
+
+procedure TModel.SetLastComponentUpdate(const Value: TOnComponentUpdated);
+begin
+  FLastComponentUpdate := Value;
+end;
+
+procedure TModel.SetLastTypeUpdate(const Value: TOnTypeUpdated);
+begin
+  FLastTypeUpdate := Value;
+end;
+
+procedure TModel.SetOneComponentUpdate(const Value: TOnComponentUpdated);
+begin
+  FOneComponentUpdate := Value;
+end;
+
+procedure TModel.SetOneTypeUpdate(const Value: TOnTypeUpdated);
+begin
+  FOneTypeUpdate := Value;
+end;
+
+procedure TModel.SetType(const ListItem: PTypeLI; const TypeInfo: TTypeInfo);
+begin
+  ListItem^.Info := TypeInfo;
+  if FIsUpdatingType and Assigned(OneTypeUpdate) then
+    OneTypeUpdate(TypeInfo);
+end;
+
+procedure TModel.SetTypesUpdate(const Value: TOnListChanged);
+begin
+  FTypesUpdate := Value;
+end;
+
+procedure TModel.SortComputerList(Comp: TComp);
+var
+  LastItem, PrevSwappedItem, PrevLastItem, Tmp, TmpLastNext: PComputerLI;
+begin
+  LastItem := FComputerList;
+  if LastItem <> nil then
+    while LastItem^.Next <> nil do
+    begin
+      LastItem := LastItem^.Next;
+    end;
+
+  new(Tmp);
+  Tmp^.Next := FComputerList;
+  FComputerList := Tmp;
+
+  while LastItem <> FComputerList^.Next do
+  begin
+    PrevSwappedItem := FComputerList;
+    Tmp := FComputerList;
+    while Tmp <> LastItem do
+    begin
+      PrevLastItem := Tmp;
+      if Comp(Tmp^.Next^.Build.Price, PrevSwappedItem^.Next^.Build.Price) then
+        PrevSwappedItem := Tmp;
+      Tmp := Tmp^.Next;
+    end;
+    if PrevSwappedItem^.Next <> LastItem then
+    begin
+      Tmp := PrevSwappedItem^.Next;
+      TmpLastNext := LastItem^.Next;
+      PrevSwappedItem^.Next := LastItem;
+      PrevLastItem^.Next := Tmp;
+      LastItem^.Next := Tmp^.Next;
+      Tmp^.Next := TmpLastNext;
+    end;
+    LastItem := PrevLastItem;
+  end;
+  Tmp := FComputerList;
+  FComputerList := FComputerList^.Next;
+  Dispose(Tmp);
+  if Assigned(UpdateComputerView) then
+    UpdateComputerView;
+end;
+
+function UpperComp(Price1, Price2: Integer): Boolean;
+begin
+  result := Price1 >= Price2;
 end;
 
 end.

@@ -39,6 +39,7 @@ object TypeForm: TTypeForm
     Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = []
+    MaxLength = 20
     ParentFont = False
     TabOrder = 0
   end

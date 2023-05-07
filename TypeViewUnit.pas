@@ -42,9 +42,7 @@ begin
   result := ShowModal;
 
   if result = mrOk then
-  begin
     TypeInfo.TypeName := edtType.Text;
-  end;
 end;
 
 function TTypeForm.ShowForNewType(var TypeInfo: TTypeInfo): TModalResult;
