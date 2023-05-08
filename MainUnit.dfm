@@ -304,6 +304,7 @@ object MainForm: TMainForm
         Top = 210
         Width = 200
         Height = 30
+        Hint = 'This computer builds also was added to .txt file'
         Caption = 'Build PC'#39's'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -311,6 +312,8 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 2
         OnClick = btnBuildPCClick
       end

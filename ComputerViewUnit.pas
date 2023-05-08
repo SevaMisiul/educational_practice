@@ -42,7 +42,7 @@ begin
 
   if Res = mrOk then
   begin
-    AssignFile(F, 'orders.txt');
+    AssignFile(F, 'computers\orders.txt');
     Append(F);
 
     writeln(F, Order.Address);

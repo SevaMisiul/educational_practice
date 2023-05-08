@@ -7,7 +7,8 @@ uses
   TypeViewUnit in 'TypeViewUnit.pas' {TypeForm},
   ModelUnit in 'ModelUnit.pas',
   ComputerViewUnit in 'ComputerViewUnit.pas' {ComputerForm},
-  OrderUnit in 'OrderUnit.pas' {OrderForm};
+  OrderUnit in 'OrderUnit.pas' {OrderForm},
+  GetTypeUnit in 'GetTypeUnit.pas' {GetTypeForm};
 
 {$R *.res}
 
@@ -19,5 +20,6 @@ begin
   Application.CreateForm(TTypeForm, TypeForm);
   Application.CreateForm(TComputerForm, ComputerForm);
   Application.CreateForm(TOrderForm, OrderForm);
+  Application.CreateForm(TGetTypeForm, GetTypeForm);
   Application.Run;
 end.

@@ -87,7 +87,7 @@ var
 implementation
 
 uses
-  ComputerViewUnit;
+  ComputerViewUnit, GetTypeUnit;
 
 {$R *.dfm}
 
@@ -223,23 +223,31 @@ var
   TmpCompatibleL: PCompatibleList;
   TmpCompatibleI: PCompatibleLI;
   TmpComponent: PComponentLI;
+  TypeCode: Integer;
+  Res: TModalResult;
 begin
-  with sgListInfo do
-  begin
-    cbLists.ItemIndex := -1;
-    TmpCompatibleL := ListsModel.GetCompatibleList(StrToInt(Cells[0, Row]));
-    if TmpCompatibleL <> nil then
-      TmpCompatibleI := TmpCompatibleL^.Header^.Next
-    else
-      TmpCompatibleI := nil;
-    RowCount := 2;
-    while TmpCompatibleI <> nil do
+  Res := GetTypeForm.GetType(TypeCode);
+
+  if Res = mrOk then
+    with sgListInfo do
     begin
-      TmpComponent := ListsModel.GetComponent(TmpCompatibleI^.Info.ComponentCode, TmpCompatibleI^.Info.TypeCode);
-      AddComponentView(TmpComponent^.Info);
-      TmpCompatibleI := TmpCompatibleI^.Next;
+      cbLists.ItemIndex := -1;
+      TmpCompatibleL := ListsModel.GetCompatibleList(StrToInt(Cells[0, Row]));
+      if TmpCompatibleL <> nil then
+        TmpCompatibleI := TmpCompatibleL^.Header^.Next
+      else
+        TmpCompatibleI := nil;
+      RowCount := 2;
+      while TmpCompatibleI <> nil do
+      begin
+        if (TypeCode = -1) or (TmpCompatibleI^.Info.TypeCode = TypeCode) then
+        begin
+          TmpComponent := ListsModel.GetComponent(TmpCompatibleI^.Info.ComponentCode, TmpCompatibleI^.Info.TypeCode);
+          AddComponentView(TmpComponent^.Info);
+        end;
+        TmpCompatibleI := TmpCompatibleI^.Next;
+      end;
     end;
-  end;
 end;
 
 procedure TMainForm.btnSortDecreaseClick(Sender: TObject);
@@ -367,6 +375,7 @@ var
   F: file;
 begin
   CreateDir('lists');
+  CreateDir('computers');
   if not FileExists('lists\types.info') then
   begin
     AssignFile(F, 'lists\types.info');
@@ -385,7 +394,7 @@ begin
     Rewrite(F);
     CloseFile(F);
   end;
-  if not FileExists('orders.txt') then
+  if not FileExists('computers\orders.txt') then
   begin
     AssignFile(F, 'orders.txt');
     Rewrite(F);
@@ -555,7 +564,10 @@ var
   I: Integer;
   TmpType: PTypeLI;
   Tmp: PComputerLI;
+  F: TextFile;
 begin
+  AssignFile(F, 'computers\builds.txt');
+  Rewrite(F);
   with sgComputersInfo do
   begin
     DefaultColWidth := 200;
@@ -580,14 +592,25 @@ begin
     while Tmp <> nil do
     begin
       RowCount := RowCount + 1;
-      for I := 0 to ColCount - 2 do
+      for I := 0 to ColCount - 3 do
+      begin
         Cells[I, RowCount - 1] := Tmp^.Build.Components[I].Model;
+        writeln(F, ListsModel.GetType(Tmp^.Build.Components[I].TypeCode)^.Info.TypeName + ': ' + Tmp^.Build.Components
+          [I].Model);
+      end;
+      writeln(F, Tmp^.Build.Price);
+      if Tmp^.Build.IsInStock then
+        writeln(F, 'In stock')
+      else
+        writeln(F, 'Not in stock');
+      writeln(F, '-----------------------------------');
       Cells[ColCount - 2, RowCount - 1] := IntToStr(Tmp^.Index);
       Cells[ColCount - 1, RowCount - 1] := IntToStr(Tmp^.Build.Price);
       Tmp := Tmp^.Next;
     end;
   end;
-  CheckPCButtonsState
+  CloseFile(F);
+  CheckPCButtonsState;
 end;
 
 procedure TMainForm.UpdateTypeList();
