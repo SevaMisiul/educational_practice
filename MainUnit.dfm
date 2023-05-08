@@ -5,7 +5,7 @@ object MainForm: TMainForm
   ClientHeight = 754
   ClientWidth = 1293
   Color = clBtnFace
-  Constraints.MinHeight = 330
+  Constraints.MinHeight = 450
   Constraints.MinWidth = 600
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -219,7 +219,6 @@ object MainForm: TMainForm
       ParentFont = False
       TabOrder = 0
       OnClick = sgComputersInfoClick
-      ExplicitLeft = -6
     end
     object pnBuildPCButtons: TPanel
       Left = 993

@@ -50,8 +50,8 @@ object ComputerForm: TComputerForm
     Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = []
-    ModalResult = 8
     ParentFont = False
     TabOrder = 2
+    OnClick = btnMakeOrderClick
   end
 end

@@ -385,6 +385,12 @@ begin
     Rewrite(F);
     CloseFile(F);
   end;
+  if not FileExists('orders.txt') then
+  begin
+    AssignFile(F, 'orders.txt');
+    Rewrite(F);
+    CloseFile(F);
+  end;
 
   ExitMode := 2;
   sgListInfo.RowHeights[0] := -1;
@@ -470,7 +476,8 @@ end;
 procedure TMainForm.sgComputersInfoClick(Sender: TObject);
 begin
   with sgComputersInfo do
-    ComputerForm.ShowComputer(ListsModel.ComputerList[StrToInt(Cells[ColCount - 2, Row])]^.Build);
+    if Row <> 1 then
+      ComputerForm.ShowComputer(ListsModel.ComputerList[StrToInt(Cells[ColCount - 2, Row])]^.Build);
 end;
 
 procedure TMainForm.sgListInfoSelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);

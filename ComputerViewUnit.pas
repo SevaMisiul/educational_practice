@@ -12,8 +12,9 @@ type
     btnClose: TButton;
     btnMakeOrder: TButton;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnMakeOrderClick(Sender: TObject);
   private
-    { Private declarations }
+    FCurrComputer: TComputerBuild;
   public
     procedure ShowComputer(ComputerBuild: TComputerBuild);
   end;
@@ -24,7 +25,34 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+  OrderUnit;
+
 { TComputerForm }
+
+procedure TComputerForm.btnMakeOrderClick(Sender: TObject);
+var
+  Order: TOrder;
+  Res: TModalResult;
+  F: TextFile;
+  I: Integer;
+begin
+  Res := OrderForm.ShowForMakeOrder(FCurrComputer.Price, Order);
+
+  if Res = mrOk then
+  begin
+    AssignFile(F, 'orders.txt');
+    Append(F);
+
+    writeln(F, Order.Address);
+    writeln(F, IntToStr(Order.Count));
+    writeln(F, PaymentMethodName[Order.PymentMethod]);
+    for I := 0 to Length(FCurrComputer.Components) - 1 do
+      writeln(F, FCurrComputer.Components[I].Model);
+    CloseFile(F);
+  end;
+end;
 
 procedure TComputerForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -43,6 +71,7 @@ var
   lb: TLabel;
   memo: TMemo;
 begin
+  FCurrComputer := ComputerBuild;
   for I := 0 to Length(ComputerBuild.Components) - 1 do
   begin
     pn := TPanel.Create(scrlbInfo);
