@@ -15,6 +15,7 @@ object MainForm: TMainForm
   Menu = MenuBar
   OldCreateOrder = False
   Position = poScreenCenter
+  Scaled = False
   OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96

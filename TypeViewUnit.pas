@@ -27,11 +27,29 @@ implementation
 {$R *.dfm}
 
 procedure TTypeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+var
+  Tmp: PTypeLI;
+  IsUnique: Boolean;
 begin
   if (Self.ModalResult = mrOk) and (edtType.Text = '') then
   begin
     ShowMessage('Fill in required fields');
     CanClose := False;
+  end
+  else if ModalResult = mrOk then
+  begin
+    IsUnique := True;
+    Tmp := ListsModel.TypeList;
+    while Tmp <> nil do
+    begin
+      IsUnique := IsUnique and (Tmp^.Info.TypeName <> edtType.Text);
+      Tmp := Tmp^.Next;
+    end;
+    if not IsUnique then
+    begin
+      ShowMessage('This type name is not unique');
+      CanClose := False;
+    end;
   end;
 end;
 

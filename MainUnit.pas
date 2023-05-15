@@ -396,7 +396,7 @@ begin
   end;
   if not FileExists('computers\orders.txt') then
   begin
-    AssignFile(F, 'orders.txt');
+    AssignFile(F, 'computers\orders.txt');
     Rewrite(F);
     CloseFile(F);
   end;

@@ -14,7 +14,7 @@ object OrderForm: TOrderForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  ShowHint = False
+  Scaled = False
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   PixelsPerInch = 96
@@ -61,7 +61,7 @@ object OrderForm: TOrderForm
   object lbPrice: TLabel
     Left = 22
     Top = 220
-    Width = 46
+    Width = 5
     Height = 19
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

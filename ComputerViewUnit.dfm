@@ -13,6 +13,7 @@ object ComputerForm: TComputerForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  Scaled = False
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13

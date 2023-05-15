@@ -13,6 +13,7 @@ object TypeForm: TTypeForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  Scaled = False
   OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 13
