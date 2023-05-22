@@ -231,6 +231,7 @@ begin
   if Res = mrOk then
     with sgListInfo do
     begin
+      btnAddComponent.Enabled := False;
       cbLists.ItemIndex := -1;
       TmpCompatibleL := ListsModel.GetCompatibleList(StrToInt(Cells[0, Row]));
       if TmpCompatibleL <> nil then
@@ -269,11 +270,9 @@ begin
   if cbLists.Text = 'Components'' types' then
     UpdateTypeList()
   else
-  begin
-
     UpdateComponentList(ListsModel.GetComponentListBorders(ListsModel.GetTypeCode(cbLists.Text)));
-  end;
   CheckListButtonsState(sgListInfo.Row);
+  btnAddComponent.Enabled := True;
 end;
 
 procedure TMainForm.CheckListButtonsState(Row: Integer);

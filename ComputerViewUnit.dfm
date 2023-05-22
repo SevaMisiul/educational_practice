@@ -46,6 +46,7 @@ object ComputerForm: TComputerForm
     Width = 129
     Height = 33
     Caption = 'Make an order'
+    Default = True
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16

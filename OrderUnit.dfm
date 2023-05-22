@@ -76,6 +76,7 @@ object OrderForm: TOrderForm
     Width = 75
     Height = 25
     Caption = 'OK'
+    Default = True
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16

@@ -14,6 +14,7 @@ type
     btnOk: TButton;
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
+    FDefaultName: string;
   public
     function ShowForNewType(var TypeInfo: TTypeInfo): TModalResult;
     function ShowForEditType(Var TypeInfo: TTypeInfo): TModalResult;
@@ -45,7 +46,7 @@ begin
       IsUnique := IsUnique and (Tmp^.Info.TypeName <> edtType.Text);
       Tmp := Tmp^.Next;
     end;
-    if not IsUnique then
+    if (not IsUnique) and (FDefaultName <> edtType.Text) then
     begin
       ShowMessage('This type name is not unique');
       CanClose := False;
@@ -56,6 +57,7 @@ end;
 function TTypeForm.ShowForEditType(var TypeInfo: TTypeInfo): TModalResult;
 begin
   edtType.Text := TypeInfo.TypeName;
+  FDefaultName := TypeInfo.TypeName;
 
   result := ShowModal;
 
@@ -66,6 +68,7 @@ end;
 function TTypeForm.ShowForNewType(var TypeInfo: TTypeInfo): TModalResult;
 begin
   edtType.Text := '';
+  FDefaultName := '';
 
   result := ShowModal;
 

@@ -115,22 +115,27 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure AddCompatible(const CompatibleInfo1, CompatibleInfo2: TCompatibleInfo);
-    procedure AddComponent(const Info: TComponentInfo; CompatibleArr: TCompatibleArr);
+    procedure AddCompatible(const CompatibleInfo1, CompatibleInfo2
+      : TCompatibleInfo);
+    procedure AddComponent(const Info: TComponentInfo;
+      CompatibleArr: TCompatibleArr);
     procedure AddType(const Info: TTypeInfo);
     procedure AddComputer(const Build: TComputerArr);
     procedure SortComputerList(Comp: TComp);
-    procedure SetCompatibleFromArr(const CompatibleInfo: TCompatibleInfo; const Arr: TCompatibleArr);
+    procedure SetCompatibleFromArr(const CompatibleInfo: TCompatibleInfo;
+      const Arr: TCompatibleArr);
     procedure SetType(const ListItem: PTypeLI; const TypeInfo: TTypeInfo);
-    procedure SetComponent(const ComponentItem: PComponentLI; const ComponentInfo: TComponentInfo;
-      const CompatibleArr: TCompatibleArr);
-    function GetComponent(ComponentCode: Integer; TypeCode: Integer = -1): PComponentLI;
+    procedure SetComponent(const ComponentItem: PComponentLI;
+      const ComponentInfo: TComponentInfo; const CompatibleArr: TCompatibleArr);
+    function GetComponent(ComponentCode: Integer; TypeCode: Integer = -1)
+      : PComponentLI;
     function GetComponentListBorders(TypeCode: Integer = -1): TListBorders;
     function GetCompatibleList(ComponentCode: Integer): PCompatibleList;
     function GetType(TypeCode: Integer): PTypeLI;
     function GetTypeCode(TypeName: string): Integer;
     function GetComputerList: PComputerLI;
-    function IsCompatible(CompatibleL: PCompatibleList; Code2: Integer): Boolean;
+    function IsCompatible(CompatibleL: PCompatibleList; Code2: Integer)
+      : Boolean;
     procedure ComputerAssembly(PriceFrom, PriceTo: Integer);
     procedure SaveLists(TypeLPath, ComponentLPath, CompatibleLPath: string);
     procedure ReadLists(TypeLPath, ComponentLPath, CompatibleLPath: string);
@@ -139,15 +144,21 @@ type
     procedure DeleteCompatibleList(CompatibleL: PCompatibleList);
     procedure DeleteComputerList;
     { properties }
-    property LastTypeUpdate: TOnTypeUpdated read FLastTypeUpdate write SetLastTypeUpdate;
-    property OneTypeUpdate: TOnTypeUpdated read FOneTypeUpdate write SetOneTypeUpdate;
+    property LastTypeUpdate: TOnTypeUpdated read FLastTypeUpdate
+      write SetLastTypeUpdate;
+    property OneTypeUpdate: TOnTypeUpdated read FOneTypeUpdate
+      write SetOneTypeUpdate;
     property TypesUpdate: TOnListChanged read FTypesUpdate write SetTypesUpdate;
 
-    property LastComponentUpdate: TOnComponentUpdated read FLastComponentUpdate write SetLastComponentUpdate;
-    property OneComponentUpdate: TOnComponentUpdated read FOneComponentUpdate write SetOneComponentUpdate;
-    property ComponentDeleteUpdate: TOnListChanged read FComponentDeleteUpdate write SetComponentsUpdate;
+    property LastComponentUpdate: TOnComponentUpdated read FLastComponentUpdate
+      write SetLastComponentUpdate;
+    property OneComponentUpdate: TOnComponentUpdated read FOneComponentUpdate
+      write SetOneComponentUpdate;
+    property ComponentDeleteUpdate: TOnListChanged read FComponentDeleteUpdate
+      write SetComponentsUpdate;
 
-    property UpdateComputerView: TOnListChanged read FUpdateComputerView write SetComputerView;
+    property UpdateComputerView: TOnListChanged read FUpdateComputerView
+      write SetComputerView;
 
     property TypeCount: Integer read FTypeCount;
     property ComputerList[Index: Integer]: PComputerLI read GetComputer;
@@ -166,7 +177,8 @@ var
 
 implementation
 
-procedure TModel.AddCompatible(const CompatibleInfo1, CompatibleInfo2: TCompatibleInfo);
+procedure TModel.AddCompatible(const CompatibleInfo1, CompatibleInfo2
+  : TCompatibleInfo);
 var
   Info: TCompatibleInfo;
   TmpList: PCompatibleList;
@@ -191,7 +203,8 @@ begin
   TmpItem^.Info := CompatibleInfo2;
 end;
 
-procedure TModel.AddComponent(const Info: TComponentInfo; CompatibleArr: TCompatibleArr);
+procedure TModel.AddComponent(const Info: TComponentInfo;
+  CompatibleArr: TCompatibleArr);
 var
   Tmp, LastComponent: PComponentLI;
   PrevType, CurrType: PTypeLI;
@@ -282,7 +295,10 @@ var
       AddComputer(ComputerBuild)
     else if ComponentType <> nil then
     begin
-      TmpCompatibleItem := CurrCompatibleList^.Header^.Next;
+      if CurrCompatibleList <> nil then
+        TmpCompatibleItem := CurrCompatibleList^.Header^.Next
+      else
+        TmpCompatibleItem := nil;
       while TmpCompatibleItem <> nil do
       begin
         with TmpCompatibleItem^.Info do
@@ -295,13 +311,15 @@ var
               for I := 1 to ArrIndex - 1 do
               begin
                 IsCompatibleAll := IsCompatibleAll and
-                  ListsModel.IsCompatible(ListsModel.GetCompatibleList(ComputerBuild[I].ComponentCode),
+                  ListsModel.IsCompatible
+                  (ListsModel.GetCompatibleList(ComputerBuild[I].ComponentCode),
                   Component.ComponentCode);
               end;
               if IsCompatibleAll then
               begin
                 ComputerBuild[ArrIndex] := Component;
-                SetComputer(ComponentType^.Next, ArrIndex + 1, CurrPrice + Component.Price);
+                SetComputer(ComponentType^.Next, ArrIndex + 1,
+                  CurrPrice + Component.Price);
               end;
             end;
           end;
@@ -319,7 +337,8 @@ begin
     Borders.Last := Borders.Last^.Next;
   while Borders.First <> Borders.Last do
   begin
-    CurrCompatibleList := ListsModel.GetCompatibleList(Borders.First^.Info.ComponentCode);
+    CurrCompatibleList := ListsModel.GetCompatibleList
+      (Borders.First^.Info.ComponentCode);
     ComputerBuild[0] := Borders.First^.Info;
     SetComputer(TmpType^.Next, 1, ComputerBuild[0].Price);
     Borders.First := Borders.First^.Next;
@@ -378,7 +397,8 @@ begin
     while CompatibleL^.Header <> nil do
     begin
       TmpCompatibleI := CompatibleL^.Header;
-      DeleteCompatibleItem(TmpCompatibleI^.Info.ComponentCode, CompatibleL^.Info.ComponentCode);
+      DeleteCompatibleItem(TmpCompatibleI^.Info.ComponentCode,
+        CompatibleL^.Info.ComponentCode);
       CompatibleL^.Header := CompatibleL^.Header^.Next;
       Dispose(TmpCompatibleI);
     end;
@@ -579,7 +599,8 @@ begin
   end;
 end;
 
-function TModel.IsCompatible(CompatibleL: PCompatibleList; Code2: Integer): Boolean;
+function TModel.IsCompatible(CompatibleL: PCompatibleList;
+  Code2: Integer): Boolean;
 var
   TmpCompatibleItem: PCompatibleLI;
 begin
@@ -587,7 +608,8 @@ begin
   if CompatibleL <> nil then
   begin
     TmpCompatibleItem := CompatibleL^.Header^.Next;
-    while (TmpCompatibleItem <> nil) and (TmpCompatibleItem^.Info.ComponentCode <> Code2) do
+    while (TmpCompatibleItem <> nil) and
+      (TmpCompatibleItem^.Info.ComponentCode <> Code2) do
       TmpCompatibleItem := TmpCompatibleItem^.Next;
   end;
   if TmpCompatibleItem = nil then
@@ -706,7 +728,8 @@ begin
   CloseFile(CompatibleF);
 end;
 
-procedure TModel.SetCompatibleFromArr(const CompatibleInfo: TCompatibleInfo; const Arr: TCompatibleArr);
+procedure TModel.SetCompatibleFromArr(const CompatibleInfo: TCompatibleInfo;
+  const Arr: TCompatibleArr);
 var
   I: Integer;
 begin
@@ -718,8 +741,8 @@ begin
     end;
 end;
 
-procedure TModel.SetComponent(const ComponentItem: PComponentLI; const ComponentInfo: TComponentInfo;
-  const CompatibleArr: TCompatibleArr);
+procedure TModel.SetComponent(const ComponentItem: PComponentLI;
+  const ComponentInfo: TComponentInfo; const CompatibleArr: TCompatibleArr);
 var
   CompatibleInfo: TCompatibleInfo;
 begin

@@ -280,6 +280,7 @@ object MainForm: TMainForm
         Font.Height = -16
         Font.Name = 'Tahoma'
         Font.Style = []
+        MaxLength = 9
         NumbersOnly = True
         ParentFont = False
         TabOrder = 0
@@ -295,6 +296,7 @@ object MainForm: TMainForm
         Font.Height = -16
         Font.Name = 'Tahoma'
         Font.Style = []
+        MaxLength = 9
         NumbersOnly = True
         ParentFont = False
         TabOrder = 1
